@@ -1,0 +1,33 @@
+{
+  "name": "physics-digital-hub",
+  "private": true,
+  "version": "1.1.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "verify": "node scripts/verify-project.mjs",
+    "prebuild": "npm run verify",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck": "tsc -b --pretty",
+    "check": "npm run verify && tsc -b --pretty"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.87.1",
+    "@vimeo/player": "^2.26.0",
+    "lucide-react": "^0.555.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.1.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.2"
+  },
+  "description": "S.K.S Public School Annual Exhibition hydraulic construction crane digital hub",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

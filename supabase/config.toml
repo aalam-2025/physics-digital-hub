@@ -1,0 +1,10 @@
+project_id = "physics-digital-hub"
+
+[functions.public-api]
+verify_jwt = false
+
+[functions.verify-shared-gate]
+verify_jwt = false
+
+# member-api keeps the default JWT verification enabled. Calls must include a valid
+# Supabase Auth access token plus the short-lived shared-password gate token.
