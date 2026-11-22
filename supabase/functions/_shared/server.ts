@@ -12,6 +12,23 @@ export function jsonResponse(body: unknown, status = 200): Response {
     headers: { ...corsHeaders, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
   });
 }
+function createSecretKeyFetch(secretKey: string): typeof fetch {
+  return async (input: RequestInfo | URL, init?: RequestInit) => {
+    const requestHeaders = input instanceof Request ? input.headers : undefined;
+    const headers = new Headers(init?.headers ?? requestHeaders);
+
+    const authorization = headers.get('Authorization')?.trim();
+
+    if (
+      secretKey.startsWith('sb_secret_') &&
+      authorization === `Bearer ${secretKey}`
+    ) {
+      headers.delete('Authorization');
+    }
+
+    return fetch(input, { ...init, headers });
+  };
+}
 
 export function getAdminClient() {
   const url = Deno.env.get('SUPABASE_URL');
@@ -41,8 +58,11 @@ export function getAdminClient() {
   }
 
   return createClient(url, secretKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  auth: { persistSession: false, autoRefreshToken: false },
+  global: {
+    fetch: createSecretKeyFetch(secretKey),
+  },
+});
 }
 
 export function getClientIp(request: Request): string {
