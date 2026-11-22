@@ -12,7 +12,7 @@ This revision keeps the approved three-screen public journey and strengthens the
 - Comments open in a desktop side panel and a mobile slide-up panel.
 - Vimeo supports both a numeric video ID and the privacy hash used for unlisted videos.
 - Viewer / Project Member access choice, shared-password gate, six animated member cards, and an individual Supabase Auth login for each member.
-- Six-member directory inside the private dashboard, with internal login aliases and CSV export. Passwords are never displayed or exported; no password-reset feature is provided.
+- Six-member directory inside the private dashboard, showing member codes, names, roles, and account status, with CSV export. Internal sign-in identifiers are not displayed or exported.
 - Aman Alam is enforced as the sole administrator by the database role/member-code constraint and server-side checks. The other five accounts remain members.
 - All six members can view shared analytics and delete comments. Only Aman can change the active video, announcement, and exhibition information. These controls exist only in the private member area.
 - Server-side SQL aggregation for the selected 7/30/90-day analytics range, recent activity, live-visitor estimate, chart data, and paginated CSV export with an explicit safety-limit warning.
@@ -29,7 +29,7 @@ This revision keeps the approved three-screen public journey and strengthens the
 
 This is the **V1.1.1 source-code package**, not a deployed or production-verified website. The package still needs your Supabase project, six locally provisioned accounts, the shared password hash and server secrets, Vimeo video details, GitHub Release MP4 URL, Render environment variables, and live tests. No passwords, provider keys, Vimeo IDs, or personal account credentials are included.
 
-The repository is intentionally **Public**, as confirmed by the project owner. Anyone can view and copy the source code, so do not commit `.env.local`, `scripts/.env.admin.local`, `supabase/functions/.env`, Supabase server keys, real passwords, or private tokens. `.gitignore` excludes these local secret files. Publicly displayed project-member names are part of the approved exhibition presentation; internal sign-in aliases in this demo bootstrap script are placeholders, not real email accounts.
+Synthetic internal sign-in identifiers in the source code are Supabase Auth implementation details, not real contact email addresses. They are never displayed in the member dashboard, API responses, or member-directory exports.
 
 ## 1. Connect the services in this order
 
@@ -86,28 +86,28 @@ In Supabase Authentication settings:
 - Enable Email sign-in.
 - Disable public new-user signups; only the six prepared project accounts should exist.
 - No password-reset/recovery flow is included, per the project decision.
-- The account bootstrap tool uses internal aliases ending in `.test`. If the Supabase Auth configuration rejects those aliases, stop and choose an email-alias domain you control before creating accounts. Do not substitute anyone's real email without permission.
+- The website uses synthetic `.test` identifiers only for internal Supabase password authentication. These are not real email addresses, and members never see or enter them. If Supabase rejects these identifiers during account setup, stop and resolve the issue before creating accounts. Never use anyone's real email address without permission.
 
 ## 4. Provision the six member accounts securely
 
 After `npm install` on a trusted computer:
 
 1. Copy `scripts/.env.admin.example` to `scripts/.env.admin.local`.
-2. Add your Supabase URL and server-only service-role key locally.
+2. Add your Supabase URL and server-only Supabase Secret API key (`SUPABASE_SECRET_KEY`) locally.
 3. Run `node scripts/bootstrap-members.mjs` from the project root.
-4. Enter the shared website password and each member's individual password in the local terminal. Use unique passwords of at least 12 characters.
+4. Enter the shared website password and each member's individual password in the local terminal. The minimum is 9 characters; unique passwords of 12 or more characters are recommended.
 5. The script creates or updates the six Auth accounts and matching profile records. It writes only a PBKDF2 hash of the shared password and random server secrets to `supabase/functions/.env`.
 
-The six fixed identities are:
+The six fixed project identities are:
 
-| Code | Member | Role | Internal sign-in alias |
-|---|---|---|---|
-| 01 | Aman Alam | Sole administrator | `aman@physicsdigitalhub.test` |
-| 02 | Abhirup Baru | Member | `abhirup@physicsdigitalhub.test` |
-| 03 | Sandipan Mukherjee | Member | `sandipan@physicsdigitalhub.test` |
-| 04 | Khushi Rawani | Member | `khushi@physicsdigitalhub.test` |
-| 05 | Neha Kumari | Member | `neha@physicsdigitalhub.test` |
-| 06 | Ananya Gope | Member | `ananya@physicsdigitalhub.test` |
+| Code | Member | Role |
+|---|---|---|
+| 01 | Aman Alam | Sole administrator |
+| 02 | Abhirup Baru | Member |
+| 03 | Sandipan Mukherjee | Member |
+| 04 | Khushi Rawani | Member |
+| 05 | Neha Kumari | Member |
+| 06 | Ananya Gope | Member |
 
 Do not paste passwords into chat, GitHub, or source files. Keep `scripts/.env.admin.local` and `supabase/functions/.env` private; both are ignored by Git.
 
