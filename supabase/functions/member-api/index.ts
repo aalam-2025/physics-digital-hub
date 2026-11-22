@@ -31,7 +31,7 @@ Deno.serve(async (request: Request) => {
       const days = ALLOWED_DAYS.has(daysInput) ? daysInput : 30;
       await admin.from('comments').delete().lte('expires_at', new Date().toISOString());
       const [membersResult, settingsResult, commentsResult, analyticsResult, likesResult] = await Promise.all([
-        admin.from('profiles').select('id,member_code,display_name,email_alias,role').order('member_code'),
+        admin.from('profiles').select('id,member_code,display_name,role').order('member_code'),
         admin.from('site_settings').select('active_vimeo_id,active_vimeo_hash,active_mp4_url,announcement,exhibition_info').eq('id', 1).maybeSingle(),
         admin.from('comments').select('id,content,created_at,expires_at').gt('expires_at', new Date().toISOString()).order('created_at', { ascending: false }).limit(500),
         admin.rpc('get_analytics_summary', { p_days: days }),
@@ -42,7 +42,7 @@ Deno.serve(async (request: Request) => {
       const analytics = (summary.analytics ?? {}) as Record<string, number>;
       return jsonResponse({
         profile: { id: profile.id, display_name: profile.display_name, role: profile.role },
-        members: (membersResult.data ?? []).map((member) => ({ id: member.id, member_code: member.member_code, display_name: member.display_name, email_alias: member.email_alias, role: member.role })),
+        members: (membersResult.data ?? []).map((member) => ({ id: member.id, member_code: member.member_code, display_name: member.display_name, role: member.role })),
         settings: settingsResult.data ?? { active_vimeo_id: '', active_vimeo_hash: '', active_mp4_url: '', announcement: '', exhibition_info: '' },
         comments: commentsResult.data ?? [],
         analytics: {
@@ -97,7 +97,7 @@ Deno.serve(async (request: Request) => {
       if (!isAdmin) return jsonResponse({ error: 'Only Aman Alam can create a full project backup.' }, 403);
       const [settingsResult, membersResult] = await Promise.all([
         admin.from('site_settings').select('active_vimeo_id,active_vimeo_hash,active_mp4_url,announcement,exhibition_info,updated_at').eq('id', 1).maybeSingle(),
-        admin.from('profiles').select('member_code,display_name,email_alias,role,created_at').order('member_code'),
+        admin.from('profiles').select('member_code,display_name,role,created_at').order('member_code'),
       ]);
       if (settingsResult.error || membersResult.error) throw new Error('Project backup could not be prepared.');
       const activeCommentRows: { id: string; content: string; created_at: string; expires_at: string }[] = [];
