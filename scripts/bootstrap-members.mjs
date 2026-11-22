@@ -78,7 +78,23 @@ function hashPassword(password) {
   const hash = pbkdf2Sync(password, salt, 310000, 32, 'sha256');
   return `pbkdf2$310000$${salt.toString('hex')}$${hash.toString('hex')}`;
 }
+function createSecretKeyFetch(secretKey) {
+  return async (input, init) => {
+    const requestHeaders = input instanceof Request ? input.headers : undefined;
+    const headers = new Headers(init?.headers ?? requestHeaders);
 
+    const authorization = headers.get('Authorization')?.trim();
+
+    if (
+      secretKey.startsWith('sb_secret_') &&
+      authorization === `Bearer ${secretKey}`
+    ) {
+      headers.delete('Authorization');
+    }
+
+    return fetch(input, { ...init, headers });
+  };
+}
 const members = [
   { member_code: '01', display_name: 'Aman Alam', email_alias: 'aman@physicsdigitalhub.test', role: 'admin' },
   { member_code: '02', display_name: 'Abhirup Baru', email_alias: 'abhirup@physicsdigitalhub.test', role: 'member' },
@@ -97,8 +113,11 @@ if (!env.SUPABASE_URL || !supabaseSecretKey) {
 }
 
 const supabase = createClient(env.SUPABASE_URL, supabaseSecretKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  auth: { persistSession: false, autoRefreshToken: false },
+  global: {
+    fetch: createSecretKeyFetch(supabaseSecretKey),
+  },
+});
 
   console.log('\nPHYSICS DIGITAL HUB — secure member-account setup');
   console.log(`Passwords are entered locally and are not printed. Use unique passwords of at least ${MIN_PASSWORD_LENGTH} characters; 12 or more is recommended.\n`);
