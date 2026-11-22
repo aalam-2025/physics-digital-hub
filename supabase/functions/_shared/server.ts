@@ -15,18 +15,34 @@ export function jsonResponse(body: unknown, status = 200): Response {
 
 export function getAdminClient() {
   const url = Deno.env.get('SUPABASE_URL');
-  let secretKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+  const singleSecretKey = Deno.env.get('SUPABASE_SECRET_KEY')?.trim() || '';
+  const legacySecretKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')?.trim() || '';
+
+  let managedSecretKey = '';
   const secretKeysJson = Deno.env.get('SUPABASE_SECRET_KEYS');
+
   if (secretKeysJson) {
     try {
-      const secretKeys = JSON.parse(secretKeysJson) as Record<string, string>;
-      secretKey = secretKeys.default ?? secretKey;
+      const secretKeys = JSON.parse(secretKeysJson) as Record<string, unknown>;
+      const defaultSecretKey = secretKeys.default;
+      if (typeof defaultSecretKey === 'string') {
+        managedSecretKey = defaultSecretKey.trim();
+      }
     } catch {
-      // Keep the legacy service-role variable as a fallback for local development.
+      // Use the single-key or legacy fallback for local development.
     }
   }
-  if (!url || !secretKey) throw new Error('Supabase server credentials are not configured.');
-  return createClient(url, secretKey, { auth: { persistSession: false, autoRefreshToken: false } });
+
+  const secretKey = managedSecretKey || singleSecretKey || legacySecretKey;
+
+  if (!url || !secretKey) {
+    throw new Error('Supabase server credentials are not configured.');
+  }
+
+  return createClient(url, secretKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 export function getClientIp(request: Request): string {
