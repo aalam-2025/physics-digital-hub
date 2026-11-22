@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const root = process.cwd();
 const envPath = path.join(root, 'scripts', '.env.admin.local');
+const MIN_PASSWORD_LENGTH = 9;
 
 function loadEnv(filePath) {
   if (!fs.existsSync(filePath)) {
@@ -89,23 +90,30 @@ const members = [
 
 async function main() {
   const env = loadEnv(envPath);
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are both required in scripts/.env.admin.local.');
-  }
-  const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  const supabaseSecretKey = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!env.SUPABASE_URL || !supabaseSecretKey) {
+  throw new Error('SUPABASE_URL and SUPABASE_SECRET_KEY are required in scripts/.env.admin.local.');
+}
+
+const supabase = createClient(env.SUPABASE_URL, supabaseSecretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
   console.log('\nPHYSICS DIGITAL HUB — secure member-account setup');
-  console.log('Passwords are entered locally and are not printed. Use unique passwords of at least 12 characters.\n');
+  console.log(`Passwords are entered locally and are not printed. Use unique passwords of at least ${MIN_PASSWORD_LENGTH} characters; 12 or more is recommended.\n`);
 
   const sharedPassword = await ask('Shared website password (hidden): ', true);
-  if (sharedPassword.length < 12) throw new Error('The shared website password must be at least 12 characters.');
+  if (sharedPassword.length < MIN_PASSWORD_LENGTH) {
+  throw new Error(`The shared website password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+  }
   const memberPasswords = new Map();
   const usedPasswords = new Set([sharedPassword]);
   for (const member of members) {
     const password = await ask(`${member.display_name} individual password (hidden): `, true);
-    if (password.length < 12) throw new Error(`${member.display_name}'s password must be at least 12 characters.`);
+    if (password.length < MIN_PASSWORD_LENGTH) {
+  throw new Error(`${member.display_name}'s password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+    }
     if (usedPasswords.has(password)) throw new Error('Every member must have a different individual password, and individual passwords must differ from the shared website password.');
     usedPasswords.add(password);
     memberPasswords.set(member.email_alias, password);
