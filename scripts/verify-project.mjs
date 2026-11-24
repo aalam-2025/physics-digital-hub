@@ -47,6 +47,7 @@ for (const key of ['vimeoId', 'vimeoHash', 'vimeoUrl', 'mp4DownloadUrl']) {
 }
 
 const app = fs.readFileSync(path.join(root, 'src/App.tsx'), 'utf8');
+const styles = fs.readFileSync(path.join(root, 'src/styles.css'), 'utf8');
 const expectedMembers = [
   'Aman Alam',
   'Abhirup Baru',
@@ -61,6 +62,25 @@ if (missingMembers.length) {
   process.exit(1);
 }
 
+// Protect the core QR visitor journey from accidental removal or reduced reading time.
+const visitorJourneyChecks = [
+  ['welcome-to-team manual navigation', /onClick=\{\(\) => setScreen\('members'\)\}[^>]*>MEET THE TEAM/],
+  ['team-to-video manual navigation', /onClick=\{\(\) => setScreen\('video'\)\}[^>]*>WATCH PROJECT EXPLANATION/],
+  ['four-second welcome reading window', /screen === 'welcome' \? 4000/],
+  ['five-second team reading window', /screen === 'members' \? 5000/],
+];
+const missingJourneyFeatures = visitorJourneyChecks
+  .filter(([, pattern]) => !pattern.test(app))
+  .map(([label]) => label);
+if (missingJourneyFeatures.length) {
+  console.error(`Project verification failed: visitor journey checks missing: ${missingJourneyFeatures.join(', ')}`);
+  process.exit(1);
+}
+if (!/@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.credit-line\{opacity:1;transform:none/.test(styles)) {
+  console.error('Project verification failed: reduced-motion styles must reveal all team names without staggered animation.');
+  process.exit(1);
+}
+
 const secretFiles = ['.env.local', 'scripts/.env.admin.local', 'supabase/functions/.env'];
 const presentSecrets = secretFiles.filter((file) => fs.existsSync(path.join(root, file)));
 if (presentSecrets.length && process.env.CI === 'true') {
@@ -68,5 +88,5 @@ if (presentSecrets.length && process.env.CI === 'true') {
   process.exit(1);
 }
 
-console.log(`Project verification passed: ${requiredFiles.length} required files, emergency configuration shape, six member names, and secret-file checks.`);
+console.log(`Project verification passed: ${requiredFiles.length} required files, emergency configuration shape, six member names, QR visitor navigation, reading windows, and secret-file checks.`);
 console.log('Note: this check does not replace TypeScript compilation, Supabase migration execution, or live service tests.');

@@ -72,5 +72,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 @media(prefers-reduced-motion:reduce){
   .intro-screen,.video-experience,.welcome-copy .live-label,.welcome-copy .pretitle,.welcome-copy h1,.welcome-subtitle,.welcome-rule,.powered-credit,.members-header,.video-column,.access-modal{animation:none!important;filter:none!important}
   .crest-frame{animation:none!important;filter:drop-shadow(0 0 28px rgba(27,156,255,.2))}
+  .orbit-a,.intro-progress i,.credit-line{animation:none!important}
+  .intro-progress i,.intro-progress i.progress-two{width:100%!important}
+  .credit-line{opacity:1;transform:none;will-change:auto}
   .welcome-art:after{display:none}
 }
+
+
+/* Visitor-controlled navigation for the QR-code exhibition journey. */
+.intro-continue{display:inline-flex;align-items:center;justify-content:center;gap:10px;margin-top:22px;padding:12px 16px;border:1px solid rgba(86,216,255,.34);border-radius:7px;background:linear-gradient(110deg,rgba(28,110,164,.25),rgba(16,54,83,.42));color:#9ceeff;font:9px var(--mono);letter-spacing:.12em;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
+.intro-continue:hover{transform:translateY(-2px);border-color:rgba(86,230,255,.72);background:linear-gradient(110deg,rgba(28,136,190,.34),rgba(16,66,101,.5));box-shadow:0 8px 24px rgba(0,155,225,.14)}
+.intro-continue:focus-visible{outline:2px solid #75eaff;outline-offset:3px}
+.members-continue{display:flex;width:max-content;margin:24px auto 0}
+@media(max-width:760px){.intro-continue{min-height:44px;padding:12px 15px;font-size:9px}.members-continue{margin-top:22px}}
+@media(prefers-reduced-motion:reduce){.intro-continue{transition:none}.intro-continue:hover{transform:none}}

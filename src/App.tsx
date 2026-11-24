@@ -172,11 +172,12 @@ function App() {
     window.setTimeout(() => setToast(''), 3600);
   }, []);
 
-  // Four-second welcome and five-second members intro. Timers also act as animation fail-safes.
+  // Keep the full reading time for every visitor. Reduced-motion preferences
+  // are handled by CSS; they should not shorten how long the team names remain visible.
+  // The on-screen Continue buttons also let visitors advance at their own pace.
   useEffect(() => {
     if (view !== 'public') return;
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const delay = screen === 'welcome' ? (reduceMotion ? 1200 : 4000) : screen === 'members' ? (reduceMotion ? 1400 : 5000) : 0;
+    const delay = screen === 'welcome' ? 4000 : screen === 'members' ? 5000 : 0;
     if (!delay) return;
     const timer = window.setTimeout(() => setScreen(screen === 'welcome' ? 'members' : 'video'), delay);
     return () => window.clearTimeout(timer);
@@ -507,7 +508,7 @@ function App() {
       {screen === 'welcome' && <main className="intro-screen welcome-screen">
         <div className="top-meta"><span className="school-lockup"><img src="/assets/sks-school-crest.webp" alt=""/><School size={14}/> S.K.S PUBLIC SCHOOL</span><span>ANNUAL EXHIBITION · PHYSICS</span></div>
         <div className="welcome-layout">
-          <div className="welcome-copy"><div className="live-label"><span/> SCHOOL PROJECT PRESENTATION</div><p className="pretitle">PROUDLY PRESENTS</p><h1>WELCOME TO<br/><span>PHYSICS DIGITAL HUB</span></h1><p className="welcome-subtitle">Discover the Science Behind <strong>Hydraulic Power.</strong></p><div className="welcome-rule"><span/><small>A SCHOOL ANNUAL EXHIBITION PROJECT</small></div><p className="powered-credit">POWERED BY <strong>AMAN ALAM AI</strong></p></div>
+          <div className="welcome-copy"><div className="live-label"><span/> SCHOOL PROJECT PRESENTATION</div><p className="pretitle">PROUDLY PRESENTS</p><h1>WELCOME TO<br/><span>PHYSICS DIGITAL HUB</span></h1><p className="welcome-subtitle">Discover the Science Behind <strong>Hydraulic Power.</strong></p><div className="welcome-rule"><span/><small>A SCHOOL ANNUAL EXHIBITION PROJECT</small></div><p className="powered-credit">POWERED BY <strong>AMAN ALAM AI</strong></p><button className="intro-continue" type="button" onClick={() => setScreen('members')}>MEET THE TEAM <ArrowRight size={15}/></button></div>
           <div className="welcome-art"><div className="art-orbit orbit-a"/><div className="art-orbit orbit-b"/><div className="crest-frame"><img src="/assets/sks-school-crest.webp" alt="S.K.S Public School emblem with the motto Knowledge, Wisdom, Success"/></div><CraneBlueprint/><div className="art-corner corner-one"/><div className="art-corner corner-two"/></div>
         </div>
         <div className="intro-bottom"><span>HYDRAULIC CONSTRUCTION CRANE</span><span className="intro-progress"><i/></span><span>01 / 03</span></div>
@@ -517,6 +518,7 @@ function App() {
         <div className="members-header"><p className="eyebrow">THE TEAM BEHIND THE MODEL</p><h1>BUILT BY <span>SIX.</span><br/>DRIVEN BY ONE VISION.</h1><p>Meet the project team of S.K.S Public School.</p></div>
         <div className="credits-list">{MEMBERS.map((member, index) => <div className="credit-line" key={member.code} style={{ animationDelay: `${index * 560}ms` }}><span className="credit-number">{member.code}</span><span className="credit-name">{member.name}</span><span className="credit-mark"/></div>)}</div>
         <div className="team-tagline"><span/> SIX MEMBERS. ONE VISION. <strong>POWERED BY AMAN ALAM AI.</strong></div>
+        <button className="intro-continue members-continue" type="button" onClick={() => setScreen('video')}>WATCH PROJECT EXPLANATION <ArrowRight size={15}/></button>
         <div className="intro-bottom"><span>PROJECT CREDITS</span><span className="intro-progress"><i className="progress-two"/></span><span>02 / 03</span></div>
       </main>}
 

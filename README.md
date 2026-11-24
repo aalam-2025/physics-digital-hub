@@ -31,6 +31,16 @@ This is the **V1.1.1 source-code package**, not a deployed or production-verifie
 
 Synthetic internal sign-in identifiers in the source code are Supabase Auth implementation details, not real contact email addresses. They are never displayed in the member dashboard, API responses, or member-directory exports.
 
+## Public QR visitor experience
+
+The public homepage is the destination for the QR code printed on the physical hydraulic construction crane model. A visitor should be able to scan the code with a phone camera and follow this sequence without signing in:
+
+1. **Welcome screen** — a silent cinematic introduction to PHYSICS DIGITAL HUB and S.K.S Public School (about 4 seconds).
+2. **Team showcase** — the six project members are introduced (about 5 seconds).
+3. **Project explainer** — the main video explains the physical model, its working mechanism, and the relevant physics concepts. The intended final AI-generated explainer is approximately 100 seconds long.
+
+The current React application implements the welcome → team → video screen sequence. Visitors can use the on-screen Continue controls to move at their own pace; automatic transitions remain as a convenience. Reduced-motion preferences disable motion styling but do not shorten the time available to read the welcome or team screens. The final explainer itself and its Vimeo/MP4 configuration are still external project inputs; do not treat the placeholder player as a completed video. The QR code must not be printed until the production HTTPS URL is final and has been tested by scanning it from a separate phone.
+
 ## 1. Connect the services in this order
 
 1. **GitHub:** Keep the source repository Public, as requested. Connect the repository to Render after the V1.1 source has been uploaded.
@@ -149,6 +159,7 @@ Do not stream the MP4 through Render. Render serves only the static website, Vim
 ## 8. Launch and test checklist
 
 - [ ] Render production build succeeds and HTTPS URL opens.
+- [ ] Scan the final production QR code from a separate phone and confirm it opens the public experience without login.
 - [ ] Welcome screen advances after about 4 seconds; no sound plays.
 - [ ] Members showcase reveals the exact six names and advances after about 5 seconds.
 - [ ] Reduced-motion mode does not leave the visitor stuck.
@@ -160,6 +171,7 @@ Do not stream the MP4 through Render. Render serves only the static website, Vim
 - [ ] Aman is the only administrator; five others remain members.
 - [ ] All six can view the shared analytics and delete public comments.
 - [ ] Only Aman can update/publish the active video and update website announcements/exhibition information.
+- [ ] The AI-generated project explainer is approximately 100 seconds and accurately explains the physical model, its working mechanism, and the relevant physics concepts.
 - [ ] Vimeo playback works, including its privacy hash if the video is unlisted.
 - [ ] GitHub Release MP4 downloads correctly.
 - [ ] Likes toggle and counts remain consistent across browsers.
