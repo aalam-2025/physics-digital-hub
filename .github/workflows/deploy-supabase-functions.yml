@@ -47,4 +47,4 @@ jobs:
           version: latest
 
       - name: Deploy Edge Functions
-        run: supabase functions deploy --remote "$SUPABASE_PROJECT_ID" --use-api --yes
+        run: supabase functions deploy --remote="$SUPABASE_PROJECT_ID" --use-api --yes
