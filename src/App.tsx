@@ -25,10 +25,12 @@ type DashboardData = {
 const MEMBERS: Member[] = [
   { code: '01', name: 'Aman Alam', emailAlias: 'aman@physicsdigitalhub.test', role: 'admin' },
   { code: '02', name: 'Abhirup Baru', emailAlias: 'abhirup@physicsdigitalhub.test', role: 'member' },
-  { code: '03', name: 'Sandipan Mukherjee', emailAlias: 'sandipan@physicsdigitalhub.test', role: 'member' },
-  { code: '04', name: 'Khushi Rawani', emailAlias: 'khushi@physicsdigitalhub.test', role: 'member' },
-  { code: '05', name: 'Neha Kumari', emailAlias: 'neha@physicsdigitalhub.test', role: 'member' },
+  { code: '03', name: 'Anik Ghosh', emailAlias: 'anik@physicsdigitalhub.test', role: 'member' },
+  { code: '04', name: 'Saheb Mukherjee', emailAlias: 'saheb@physicsdigitalhub.test', role: 'member' },
+  { code: '05', name: 'Sandipan Mukherjee', emailAlias: 'sandipan@physicsdigitalhub.test', role: 'member' },
   { code: '06', name: 'Ananya Gope', emailAlias: 'ananya@physicsdigitalhub.test', role: 'member' },
+  { code: '07', name: 'Neha Kumari', emailAlias: 'neha@physicsdigitalhub.test', role: 'member' },
+  { code: '08', name: 'Khushi Rawani', emailAlias: 'khushi@physicsdigitalhub.test', role: 'member' },
 ];
 
 const DEMO_COMMENTS_KEY = 'pdh-demo-comments';
@@ -109,32 +111,69 @@ function formatTime(value: string): string {
   return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(date);
 }
 
-function CraneBlueprint() {
+function SolarTrackerBlueprint() {
   return (
-    <svg className="crane-blueprint" viewBox="0 0 640 390" fill="none" aria-hidden="true">
+    <svg className="solar-tracker-blueprint" viewBox="0 0 640 390" fill="none" aria-hidden="true">
       <defs>
-        <linearGradient id="beam" x1="120" y1="40" x2="520" y2="330" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#75f5ff" /><stop offset="1" stopColor="#1887ff" />
+        <linearGradient id="solarPanel" x1="130" y1="120" x2="450" y2="260" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#83F2FF" /><stop offset=".55" stopColor="#299DDE" /><stop offset="1" stopColor="#1754A5" />
         </linearGradient>
-        <filter id="glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <linearGradient id="solarFrame" x1="190" y1="110" x2="430" y2="335" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#F7D58B" /><stop offset="1" stopColor="#C58B38" />
+        </linearGradient>
+        <radialGradient id="solarSun" cx="0" cy="0" r="1" gradientTransform="translate(485 75) rotate(90) scale(42)" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#FFF5C2" /><stop offset=".48" stopColor="#FFC75A" /><stop offset="1" stopColor="#E88A2B" stopOpacity=".08" />
+        </radialGradient>
+        <filter id="solarGlow"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
       </defs>
-      <g stroke="#3aaeff" strokeOpacity=".2" strokeWidth="1">
-        {Array.from({ length: 12 }, (_, i) => <path key={`v${i}`} d={`M${40 + i * 50} 18V370`} />)}
-        {Array.from({ length: 8 }, (_, i) => <path key={`h${i}`} d={`M20 ${35 + i * 45}H620`} />)}
+      <g stroke="#3AAEFF" strokeOpacity=".17" strokeWidth="1">
+        {Array.from({ length: 12 }, (_, i) => <path key={`sv${i}`} d={`M${35 + i * 51} 18V370`} />)}
+        {Array.from({ length: 8 }, (_, i) => <path key={`sh${i}`} d={`M20 ${35 + i * 45}H620`} />)}
       </g>
-      <g stroke="url(#beam)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" filter="url(#glow)">
-        <path d="M115 330H518M164 330L215 91H249L300 330M215 91L300 330M249 91L164 330" />
-        <path d="M216 91H500L549 116H216M248 91L285 65H486" />
-        <path d="M285 65L316 91M486 65L500 91M285 65H486" />
-        <path d="M447 91V198M439 198H455M447 198L468 226" />
-        <path d="M468 226V258M458 258H478L468 276Z" />
-        <path d="M198 135L268 135M185 190L278 190M174 245L289 245" strokeOpacity=".75" />
-        <path d="M365 91V330M365 142H414M365 197H414M365 252H414" strokeOpacity=".4" />
+      <g stroke="#54DFFF" strokeOpacity=".26" strokeWidth="1.5">
+        <ellipse cx="310" cy="205" rx="245" ry="103" transform="rotate(-16 310 205)" strokeDasharray="4 10" />
+        <ellipse cx="310" cy="205" rx="190" ry="150" transform="rotate(26 310 205)" strokeDasharray="2 12" />
       </g>
-      <g fill="#8cf8ff" filter="url(#glow)"><circle cx="215" cy="91" r="5"/><circle cx="486" cy="65" r="5"/><circle cx="447" cy="198" r="4"/></g>
-      <g stroke="#8cf8ff" strokeOpacity=".45"><path d="M95 344H545" strokeDasharray="6 7"/><circle cx="320" cy="198" r="174" strokeDasharray="2 12"/></g>
+      <g filter="url(#solarGlow)">
+        <circle cx="485" cy="75" r="39" fill="url(#solarSun)" />
+        <circle cx="485" cy="75" r="15" fill="#FFD77B" fillOpacity=".9" />
+        <g stroke="#FFD27A" strokeWidth="3" strokeLinecap="round" strokeOpacity=".85">
+          <path d="M485 20V9M485 141V130M430 75H419M551 75H540M446 36L438 28M532 122L524 114M524 36L532 28M438 122L446 114" />
+        </g>
+      </g>
+      <g stroke="url(#solarFrame)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" filter="url(#solarGlow)">
+        <path d="M285 222L315 330M285 222L236 330M285 222L414 330M236 330H438" />
+        <path d="M315 330L315 350M236 330L220 348M438 330L455 348M208 350H468" strokeWidth="4" />
+        <path d="M250 260L385 286M285 222L385 286" strokeOpacity=".75" />
+        <path d="M285 222L285 190M285 190L270 168M285 190L301 168" strokeWidth="4" />
+      </g>
+      <g transform="rotate(-12 292 174)" filter="url(#solarGlow)">
+        <path d="M112 124L342 91L460 174L230 209L112 124Z" fill="url(#solarPanel)" fillOpacity=".82" stroke="#8BEFFF" strokeWidth="4" strokeLinejoin="round" />
+        <g stroke="#D0FAFF" strokeOpacity=".68" strokeWidth="1.5">
+          <path d="M158 117L276 200M205 110L323 193M252 103L370 186M299 96L417 179" />
+          <path d="M146 148L376 113M170 165L400 130M197 184L427 148" />
+        </g>
+        <path d="M112 124L230 209L460 174" stroke="#C7F9FF" strokeOpacity=".7" strokeWidth="2" />
+      </g>
+      <g fill="#B8F7FF" filter="url(#solarGlow)"><circle cx="285" cy="222" r="7"/><circle cx="285" cy="190" r="5"/><circle cx="315" cy="330" r="4"/></g>
+      <g stroke="#FFD27A" strokeOpacity=".72" strokeWidth="2" strokeLinecap="round">
+        <path d="M285 222L285 190M285 190L323 160" strokeDasharray="5 6" />
+        <path d="M248 365H430" strokeDasharray="5 7" />
+      </g>
+      <g fill="#8CF8FF" fillOpacity=".9"><circle cx="95" cy="288" r="2.5"/><circle cx="535" cy="238" r="2.5"/><circle cx="390" cy="48" r="2"/></g>
     </svg>
   );
+}
+
+const PROJECT_LEADER_NAME = 'Abhirup Baru';
+function isProjectLeader(name: string | null | undefined): boolean {
+  return name?.trim() === PROJECT_LEADER_NAME;
+}
+function ProjectLeaderBadge() {
+  return <span className="project-leader-badge" aria-label="Project Leader"><span aria-hidden="true">✦</span> PROJECT LEADER</span>;
+}
+function MemberName({ name }: { name: string }) {
+  return <span className="member-name-wrap"><span>{name}</span>{isProjectLeader(name) && <ProjectLeaderBadge />}</span>;
 }
 
 function App() {
@@ -410,8 +449,8 @@ function App() {
   const downloadMemberDirectory = () => {
     if (!dashboard) return;
     const rows = [
-      ['Member code', 'Member name', 'Role'],
-      ...dashboard.members.map((member) => [member.member_code, member.display_name, member.role]),
+      ['Member code', 'Member name', 'Role', 'Designation'],
+      ...dashboard.members.map((member) => [member.member_code, member.display_name, member.role, isProjectLeader(member.display_name) ? 'PROJECT LEADER' : '']),
     ];
     const csv = rows.map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -462,10 +501,10 @@ function App() {
       <div className="dashboard-shell">
         <header className="dash-topbar">
           <div className="dash-brand"><img src="/assets/sks-school-crest.webp" alt="S.K.S Public School crest" /><div><strong>PHYSICS DIGITAL HUB</strong><span>MEMBER CONTROL CENTRE</span></div></div>
-          <div className="dash-user"><span className="role-pill"><ShieldCheck size={13}/>{dashboard.profile.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</span><span className="dash-user-name">{dashboard.profile.display_name}</span><button className="icon-button" onClick={logout} aria-label="Sign out"><LogOut size={18}/></button></div>
+          <div className="dash-user"><span className="role-pill"><ShieldCheck size={13}/>{dashboard.profile.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</span><span className="dash-user-name"><MemberName name={dashboard.profile.display_name}/></span><button className="icon-button" onClick={logout} aria-label="Sign out"><LogOut size={18}/></button></div>
         </header>
         <main className="dashboard-main">
-          <div className="dash-heading"><div><p className="eyebrow">PRIVATE PROJECT AREA</p><h1>Welcome, {dashboard.profile.display_name.split(' ')[0]}.</h1><p>Shared project workspace · S.K.S Public School</p></div><div className="dash-heading-actions">{dashboard.profile.role === 'admin' && <button className="secondary-button" onClick={() => void downloadProjectBackup()}><Download size={15}/> Backup</button>}<button className="secondary-button" onClick={() => void refreshDashboard()} disabled={dashboardLoading}><RefreshCw size={15} className={dashboardLoading ? 'spin' : ''}/> Refresh</button></div></div>
+          <div className="dash-heading"><div><p className="eyebrow">PRIVATE PROJECT AREA</p><h1 className="dash-welcome-title">Welcome, {dashboard.profile.display_name.split(' ')[0]}{isProjectLeader(dashboard.profile.display_name) && <> <ProjectLeaderBadge/></>}.</h1><p>Shared project workspace · S.K.S Public School</p></div><div className="dash-heading-actions">{dashboard.profile.role === 'admin' && <button className="secondary-button" onClick={() => void downloadProjectBackup()}><Download size={15}/> Backup</button>}<button className="secondary-button" onClick={() => void refreshDashboard()} disabled={dashboardLoading}><RefreshCw size={15} className={dashboardLoading ? 'spin' : ''}/> Refresh</button></div></div>
           <div className="dash-tabs">
             {[
               { id: 'overview', label: 'Overview', icon: Activity },
@@ -487,16 +526,16 @@ function App() {
             </div>
             <div className="dashboard-columns">
               <section className="panel-card"><div className="panel-title"><h2>Recent activity</h2><span>Latest events</span></div>{dashboard.events.slice(0, 7).length ? dashboard.events.slice(0, 7).map((event, index) => <div className="activity-row" key={`${event.created_at}-${index}`}><span className="activity-dot"/><div><strong>{event.event_type === 'page_visit' ? 'Project page visit' : event.event_type === 'video_play' ? 'Project video playback started' : 'Anonymous comment posted'}</strong><small>{formatTime(event.created_at)}</small></div></div>) : <EmptyState text="Analytics activity will appear here."/>}</section>
-              <section className="panel-card"><div className="panel-title"><h2>Project team</h2><span>{dashboard.members.length} members</span></div>{dashboard.members.map((member) => <div className="team-row" key={member.id}><span className="avatar-mini">{member.display_name.slice(0,1)}</span><div><strong>{member.display_name}</strong><small>{member.role === 'admin' ? 'Administrator' : 'Project member'}</small></div>{member.role === 'admin' && <span className="tiny-tag">ADMIN</span>}</div>)}</section>
+              <section className="panel-card"><div className="panel-title"><h2>Project team</h2><span>{dashboard.members.length} members</span></div>{dashboard.members.map((member) => <div className="team-row" key={member.id}><span className="avatar-mini">{member.display_name.slice(0,1)}</span><div><strong><MemberName name={member.display_name}/></strong><small>{member.role === 'admin' ? 'Administrator' : 'Project member'}</small></div>{member.role === 'admin' && <span className="tiny-tag">ADMIN</span>}</div>)}</section>
             </div>
             <p className="dash-footnote">All analytics are estimates based on privacy-friendly browser identifiers. They do not verify unique people.</p>
           </>}
-          {profileTab === 'comments' && <section className="panel-card"><div className="panel-title"><div><h2>Community comments</h2><p>Anonymous comments expire after 72 hours. All six members can delete them.</p></div><span>{dashboard.comments.length} active</span></div>{dashboard.comments.length ? dashboard.comments.map((comment) => <div className="moderation-row" key={comment.id}><div><p>{comment.content}</p><small>Published {formatTime(comment.created_at)}</small></div><button className="danger-icon" aria-label="Delete comment" onClick={() => void deleteComment(comment.id)}><Trash2 size={16}/></button></div>) : <EmptyState text="There are no active comments right now."/>}</section>}
+          {profileTab === 'comments' && <section className="panel-card"><div className="panel-title"><div><h2>Community comments</h2><p>Anonymous comments expire after 72 hours. All eight members can delete them.</p></div><span>{dashboard.comments.length} active</span></div>{dashboard.comments.length ? dashboard.comments.map((comment) => <div className="moderation-row" key={comment.id}><div><p>{comment.content}</p><small>Published {formatTime(comment.created_at)}</small></div><button className="danger-icon" aria-label="Delete comment" onClick={() => void deleteComment(comment.id)}><Trash2 size={16}/></button></div>) : <EmptyState text="There are no active comments right now."/>}</section>}
           {profileTab === 'video' && <div className="dashboard-columns"><section className="panel-card"><div className="panel-title"><h2>Active project video</h2><span>{dashboard.profile.role === 'admin' ? 'ADMIN CONTROL' : 'READ ONLY'}</span></div><form className="settings-form" onSubmit={saveSettings}><label>Vimeo video ID<input value={settingsDraft.active_vimeo_id} onChange={(e) => setSettingsDraft({ ...settingsDraft, active_vimeo_id: e.target.value.replace(/[^0-9]/g, '') })} placeholder="Example: 123456789" disabled={dashboard.profile.role !== 'admin'}/></label><label>Vimeo privacy hash (only for unlisted videos)<input value={settingsDraft.active_vimeo_hash} onChange={(e) => setSettingsDraft({ ...settingsDraft, active_vimeo_hash: e.target.value.replace(/[^a-zA-Z0-9]/g, '') })} placeholder="Leave blank for public videos" disabled={dashboard.profile.role !== 'admin'}/></label><label>MP4 download URL<input type="url" value={settingsDraft.active_mp4_url} onChange={(e) => setSettingsDraft({ ...settingsDraft, active_mp4_url: e.target.value })} placeholder="https://..." disabled={dashboard.profile.role !== 'admin'}/></label>{dashboard.profile.role === 'admin' ? <><button className="primary-button" type="submit">Save video details</button><p className="permission-note"><LockKeyhole size={14}/> After replacing the video, update <code>public/emergency-links.json</code> in GitHub with the same Vimeo ID and public MP4 URL, then redeploy. This keeps the video fallback available if Supabase is unavailable.</p></> : <p className="permission-note"><LockKeyhole size={14}/> Only Aman Alam can upload, replace, or publish the active video.</p>}</form></section><section className="panel-card"><div className="panel-title"><h2>Website announcements</h2><span>{dashboard.profile.role === 'admin' ? 'ADMIN CONTROL' : 'READ ONLY'}</span></div><form className="settings-form" onSubmit={saveSettings}><label>Announcement<textarea rows={3} value={settingsDraft.announcement} onChange={(e) => setSettingsDraft({ ...settingsDraft, announcement: e.target.value })} disabled={dashboard.profile.role !== 'admin'} placeholder="Internal project announcement"/></label><label>Exhibition information<textarea rows={3} value={settingsDraft.exhibition_info} onChange={(e) => setSettingsDraft({ ...settingsDraft, exhibition_info: e.target.value })} disabled={dashboard.profile.role !== 'admin'} placeholder="Internal exhibition notes"/></label>{dashboard.profile.role === 'admin' ? <button className="primary-button" type="submit">Save project updates</button> : <p className="permission-note"><LockKeyhole size={14}/> These management fields are administrator-controlled.</p>}</form></section></div>}
           {profileTab === 'analytics' && <section className="panel-card"><div className="panel-title"><div><h2>Project analytics</h2><p>Stored until the administrator manually clears them.</p></div><select value={analyticsDays} onChange={(e) => setAnalyticsDays(Number(e.target.value))}><option value={7}>Last 7 days</option><option value={30}>Last 30 days</option><option value={90}>Last 90 days</option></select></div><div className="metric-grid compact"><Metric label="Visits" value={dashboard.analytics.visits} icon={<Eye/>}/><Metric label="Unique visitors*" value={dashboard.analytics.uniqueVisitors} icon={<Users/>}/><Metric label="Video plays" value={dashboard.analytics.plays} icon={<Play/>}/><Metric label="Unique viewers*" value={dashboard.analytics.uniqueViewers} icon={<Video/>}/><Metric label="Estimated active (5m)" value={dashboard.analytics.liveVisitorsEstimate} icon={<Activity/>}/><Metric label="Likes" value={dashboard.analytics.likes} icon={<Heart/>}/><Metric label="Comments" value={dashboard.analytics.comments} icon={<MessageCircle/>}/></div><AnalyticsChart data={dashboard.daily}/><div className="analytics-actions"><button className="secondary-button" onClick={() => void exportAnalytics()}><FileSpreadsheet size={16}/> Export CSV</button>{dashboard.profile.role === 'admin' && <button className="danger-button" onClick={() => void clearAnalytics()}><Trash2 size={15}/> Clear analytics history</button>}</div><p className="dash-footnote">*Unique visitor and viewer figures are estimates, not verified people. Browser storage changes or multiple devices may affect them.</p></section>}
-          {profileTab === 'members' && <section className="panel-card"><div className="panel-title"><div><h2>Project member accounts</h2><p>Six individual accounts · one administrator · no password recovery</p></div><button className="secondary-button" onClick={downloadMemberDirectory}><FileSpreadsheet size={15}/> Export directory</button></div><div className="member-directory">{dashboard.members.map((member) => <div className="member-directory-card" key={member.id}><span className="avatar-mini">{member.member_code}</span><div className="member-directory-main"><strong>{member.display_name}</strong><small>Account status: Provisioned</small></div><span className={member.role === 'admin' ? 'tiny-tag' : 'member-tag'}>{member.role === 'admin' ? 'ADMIN' : 'MEMBER'}</span></div>)}</div><p className="permission-note"><LockKeyhole size={14}/> This directory never displays passwords. Passwords are entered locally during account setup. No password-reset feature is enabled. Aman remains the sole administrator.</p></section>}
+          {profileTab === 'members' && <section className="panel-card"><div className="panel-title"><div><h2>Project member accounts</h2><p>Eight individual accounts · one administrator · no password recovery</p></div><button className="secondary-button" onClick={downloadMemberDirectory}><FileSpreadsheet size={15}/> Export directory</button></div><div className="member-directory">{dashboard.members.map((member) => <div className="member-directory-card" key={member.id}><span className="avatar-mini">{member.member_code}</span><div className="member-directory-main"><strong><MemberName name={member.display_name}/></strong><small>Account status: Provisioned</small></div><span className={member.role === 'admin' ? 'tiny-tag' : 'member-tag'}>{member.role === 'admin' ? 'ADMIN' : 'MEMBER'}</span></div>)}</div><p className="permission-note"><LockKeyhole size={14}/> This directory never displays passwords. Passwords are entered locally during account setup. No password-reset feature is enabled. Aman remains the sole administrator.</p></section>}
         </main>
-        <footer className="dashboard-footer">PHYSICS DIGITAL HUB <span>·</span> PRIVATE MEMBER AREA <span>·</span> POWERED BY AMAN ALAM AI</footer>
+        <footer className="dashboard-footer">PHYSICS DIGITAL HUB <span>·</span> DUAL AXIS SOLAR TRACKER <span>·</span> PRIVATE MEMBER AREA</footer>
         {toast && <div className="toast"><Check size={16}/>{toast}</div>}
       </div>
     );
@@ -508,16 +547,16 @@ function App() {
       {screen === 'welcome' && <main className="intro-screen welcome-screen">
         <div className="top-meta"><span className="school-lockup"><img src="/assets/sks-school-crest.webp" alt=""/><School size={14}/> S.K.S PUBLIC SCHOOL</span><span>ANNUAL EXHIBITION · PHYSICS</span></div>
         <div className="welcome-layout">
-          <div className="welcome-copy"><div className="live-label"><span/> SCHOOL PROJECT PRESENTATION</div><p className="pretitle">PROUDLY PRESENTS</p><h1>WELCOME TO<br/><span>PHYSICS DIGITAL HUB</span></h1><p className="welcome-subtitle">Discover the Science Behind <strong>Hydraulic Power.</strong></p><div className="welcome-rule"><span/><small>A SCHOOL ANNUAL EXHIBITION PROJECT</small></div><p className="powered-credit">POWERED BY <strong>AMAN ALAM AI</strong></p><button className="intro-continue" type="button" onClick={() => setScreen('members')}>MEET THE TEAM <ArrowRight size={15}/></button></div>
-          <div className="welcome-art"><div className="art-orbit orbit-a"/><div className="art-orbit orbit-b"/><div className="crest-frame"><img src="/assets/sks-school-crest.webp" alt="S.K.S Public School emblem with the motto Knowledge, Wisdom, Success"/></div><CraneBlueprint/><div className="art-corner corner-one"/><div className="art-corner corner-two"/></div>
+          <div className="welcome-copy"><div className="live-label"><span/> SCHOOL PROJECT PRESENTATION</div><p className="pretitle">PROUDLY PRESENTS</p><h1>WELCOME TO<br/><span>PHYSICS DIGITAL HUB</span></h1><p className="welcome-subtitle">Explore how a solar panel follows the Sun across two axes.</p><div className="welcome-rule"><span/><small>A SCHOOL ANNUAL EXHIBITION PROJECT</small></div><button className="intro-continue" type="button" onClick={() => setScreen('members')}>MEET THE TEAM <ArrowRight size={15}/></button></div>
+          <div className="welcome-art"><div className="art-orbit orbit-a"/><div className="art-orbit orbit-b"/><div className="crest-frame"><img src="/assets/sks-school-crest.webp" alt="S.K.S Public School emblem with the motto Knowledge, Wisdom, Success"/></div><SolarTrackerBlueprint/><div className="art-corner corner-one"/><div className="art-corner corner-two"/></div>
         </div>
-        <div className="intro-bottom"><span>HYDRAULIC CONSTRUCTION CRANE</span><span className="intro-progress"><i/></span><span>01 / 03</span></div>
+        <div className="intro-bottom"><span>DUAL AXIS SOLAR TRACKER</span><span className="intro-progress"><i/></span><span>01 / 03</span></div>
       </main>}
 
       {screen === 'members' && <main className="intro-screen members-screen">
-        <div className="members-header"><p className="eyebrow">THE TEAM BEHIND THE MODEL</p><h1>BUILT BY <span>SIX.</span><br/>DRIVEN BY ONE VISION.</h1><p>Meet the project team of S.K.S Public School.</p></div>
-        <div className="credits-list">{MEMBERS.map((member, index) => <div className="credit-line" key={member.code} style={{ animationDelay: `${index * 560}ms` }}><span className="credit-number">{member.code}</span><span className="credit-name">{member.name}</span><span className="credit-mark"/></div>)}</div>
-        <div className="team-tagline"><span/> SIX MEMBERS. ONE VISION. <strong>POWERED BY AMAN ALAM AI.</strong></div>
+        <div className="members-header"><p className="eyebrow">THE TEAM BEHIND THE MODEL</p><h1>BUILT BY <span>EIGHT.</span><br/>DRIVEN BY ONE VISION.</h1><p>Meet the project team of S.K.S Public School.</p></div>
+        <div className="credits-list">{MEMBERS.map((member, index) => <div className="credit-line" key={member.code} style={{ animationDelay: `${index * 300}ms` }}><span className="credit-number">{member.code}</span><span className="credit-name"><MemberName name={member.name}/></span><span className="credit-mark"/></div>)}</div>
+        <div className="team-tagline"><span/> EIGHT MEMBERS. ONE VISION.</div>
         <button className="intro-continue members-continue" type="button" onClick={() => setScreen('video')}>WATCH PROJECT EXPLANATION <ArrowRight size={15}/></button>
         <div className="intro-bottom"><span>PROJECT CREDITS</span><span className="intro-progress"><i className="progress-two"/></span><span>02 / 03</span></div>
       </main>}
@@ -525,19 +564,19 @@ function App() {
       {screen === 'video' && <main className="video-experience">
         <header className="public-header"><div className="public-brand"><img src="/assets/sks-school-crest.webp" alt="S.K.S Public School logo"/><div><strong>PHYSICS DIGITAL HUB</strong><span>S.K.S PUBLIC SCHOOL · ANNUAL EXHIBITION</span></div></div><div className="public-header-right"><span className="project-chip"><span/> PROJECT LIVE</span><button className="icon-button member-entry" onClick={openMemberPortal} aria-label="Open member access" title="Member access"><UserRound size={19}/></button></div></header>
         <section className={`video-grid ${commentPanelOpen ? 'comments-open' : ''}`}>
-          <div className="video-column"><div className="player-shell"><div className="player-topline"><span><i/> MAIN PROJECT FILM</span><span>PHYSICS DIGITAL HUB / 001</span></div>{vimeoEmbedUrl ? <><iframe ref={iframeRef} src={vimeoEmbedUrl} title="Hydraulic construction crane project video" loading="eager" allow="fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" onError={() => setVideoError(true)}/>{videoError && <div className="video-error-overlay"><p>Embedded playback is unavailable right now.</p><div>{vimeoId && <a href={`https://vimeo.com/${encodeURIComponent(vimeoId)}${vimeoHash ? `/${encodeURIComponent(vimeoHash)}` : ''}`} target="_blank" rel="noreferrer">OPEN VIDEO ON VIMEO <ExternalLink size={13}/></a>}{downloadUrl && <a href={downloadUrl} target="_blank" rel="noreferrer">DOWNLOAD MP4 <Download size={13}/></a>}<a href="/emergency.html">OPEN EMERGENCY VIDEO PAGE <ExternalLink size={13}/></a></div></div>}</> : <div className="video-placeholder"><div className="placeholder-rings"><div><Play size={28}/></div></div><p className="eyebrow">PROJECT VIDEO</p><h2>THE EXPLAINER FILM<br/><span>WILL APPEAR HERE</span></h2><p>The video player activates when the Vimeo video ID is configured.</p><span className="placeholder-code">VIDEO MODULE · READY FOR CONTENT</span></div>}</div>
+          <div className="video-column"><div className="player-shell"><div className="player-topline"><span><i/> MAIN PROJECT FILM</span><span>PHYSICS DIGITAL HUB / 001</span></div>{vimeoEmbedUrl ? <><iframe ref={iframeRef} src={vimeoEmbedUrl} title="Dual Axis Solar Tracker project video" loading="eager" allow="fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" onError={() => setVideoError(true)}/>{videoError && <div className="video-error-overlay"><p>Embedded playback is unavailable right now.</p><div>{vimeoId && <a href={`https://vimeo.com/${encodeURIComponent(vimeoId)}${vimeoHash ? `/${encodeURIComponent(vimeoHash)}` : ''}`} target="_blank" rel="noreferrer">OPEN VIDEO ON VIMEO <ExternalLink size={13}/></a>}{downloadUrl && <a href={downloadUrl} target="_blank" rel="noreferrer">DOWNLOAD MP4 <Download size={13}/></a>}<a href="/emergency.html">OPEN EMERGENCY VIDEO PAGE <ExternalLink size={13}/></a></div></div>}</> : <div className="video-placeholder"><div className="placeholder-rings"><div><Play size={28}/></div></div><p className="eyebrow">PROJECT VIDEO</p><h2>THE EXPLAINER FILM<br/><span>WILL APPEAR HERE</span></h2><p>The video player activates when the Vimeo video ID is configured.</p><span className="placeholder-code">VIDEO MODULE · READY FOR CONTENT</span></div>}</div>
             <div className="video-actions"><button className={liked ? 'like-button is-liked' : 'like-button'} onClick={() => void toggleLike()} disabled={busy}><Heart size={18} fill={liked ? 'currentColor' : 'none'}/><span>{liked ? 'LIKED' : 'LIKE'}</span><b>{likeCount.toLocaleString('en-IN')}</b></button><button className="comment-open" onClick={() => setCommentPanelOpen(!commentPanelOpen)} aria-expanded={commentPanelOpen} aria-controls="public-comments-panel"><MessageCircle size={18}/><span>COMMENTS</span><b>{comments.length}</b></button>{downloadUrl ? <a className="download-button" href={downloadUrl} target="_blank" rel="noreferrer"><Download size={17}/> DOWNLOAD MP4 <ExternalLink size={12}/></a> : <span className="download-pending"><ArrowDownToLine size={16}/> DOWNLOAD AVAILABLE SOON</span>}</div>
           </div>
           {commentPanelOpen && <section id="public-comments-panel" className="comments-panel" aria-label="Anonymous project comments" aria-live="polite"><div className="comments-heading"><div><p className="eyebrow">COMMUNITY</p><h2>Project comments</h2></div><button className="icon-button" onClick={() => setCommentPanelOpen(false)} aria-label="Close comments"><X size={18}/></button></div><form className="comment-form" onSubmit={submitComment}><textarea rows={2} value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Write an anonymous comment..." maxLength={500}/><div><small>Anonymous · Automatically removed after 72 hours</small><button className="primary-button" disabled={busy || !commentText.trim()} type="submit">Publish <ArrowRight size={15}/></button></div></form>{commentsError && <div className="inline-error"><span>{commentsError}</span><button onClick={() => setReloadCommentsTick((tick) => tick + 1)}><RefreshCw size={13}/> Retry</button></div>}<div className="comment-list">{comments.length ? comments.map((comment) => <article className="comment-card" key={comment.id}><div className="comment-avatar"><MessageCircle size={14}/></div><div><p>{comment.content}</p><small>ANONYMOUS · {formatTime(comment.created_at)}</small></div></article>) : <div className="empty-comments"><MessageCircle size={22}/><span>No comments yet. Start the conversation.</span></div>}</div></section>}
         </section>
-        <footer className="public-footer compact-public-footer"><span>S.K.S PUBLIC SCHOOL</span><span>POWERED BY AMAN ALAM AI</span></footer>
+        <footer className="public-footer compact-public-footer"><span>S.K.S PUBLIC SCHOOL</span><span>DUAL AXIS SOLAR TRACKER</span></footer>
       </main>}
 
-      {memberPortalOpen && <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) setMemberPortalOpen(false); }}><section className="access-modal"><button className="modal-close icon-button" onClick={() => setMemberPortalOpen(false)} aria-label="Close access panel"><X size={18}/></button><div className="modal-logo"><img src="/assets/sks-school-crest.webp" alt="S.K.S School crest"/></div><p className="eyebrow">PHYSICS DIGITAL HUB</p><h2>{memberStage === 'access' ? 'Choose your access' : memberStage === 'shared' ? 'Project member access' : memberStage === 'choose' ? 'Select your profile' : 'Member verification'}</h2><p className="modal-subtitle">{memberStage === 'access' ? 'Continue as a visitor or enter the private project area.' : memberStage === 'shared' ? 'Enter the shared website password to continue.' : memberStage === 'choose' ? 'Select your own name to continue.' : `Enter the individual password for ${selectedMember?.name ?? 'your account'}.`}</p>
+      {memberPortalOpen && <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) setMemberPortalOpen(false); }}><section className="access-modal"><button className="modal-close icon-button" onClick={() => setMemberPortalOpen(false)} aria-label="Close access panel"><X size={18}/></button><div className="modal-logo"><img src="/assets/sks-school-crest.webp" alt="S.K.S School crest"/></div><p className="eyebrow">PHYSICS DIGITAL HUB</p><h2>{memberStage === 'access' ? 'Choose your access' : memberStage === 'shared' ? 'Project member access' : memberStage === 'choose' ? 'Select your profile' : 'Member verification'}</h2><p className="modal-subtitle">{memberStage === 'access' ? 'Continue as a visitor or enter the private project area.' : memberStage === 'shared' ? 'Enter the shared website password to continue.' : memberStage === 'choose' ? 'Select your own name to continue.' : <>Enter the individual password for {selectedMember && <MemberName name={selectedMember.name}/>}.</>}</p>
             {memberStage === 'access' && <div className="access-choices"><button className="access-choice" onClick={() => { setMemberPortalOpen(false); setView('public'); setScreen('welcome'); }}><span className="choice-icon"><Eye size={20}/></span><span><strong>Viewer</strong><small>Open the public project experience</small></span><ArrowRight size={17}/></button><button className="access-choice" onClick={() => setMemberStage('shared')}><span className="choice-icon"><LockKeyhole size={20}/></span><span><strong>Project Member</strong><small>Access your private member profile</small></span><ArrowRight size={17}/></button></div>}
             {memberStage === 'shared' && <form className="modal-form" onSubmit={verifySharedPassword}><label>Shared website password<input autoComplete="current-password" type="password" value={sharedPassword} onChange={(e) => setSharedPassword(e.target.value)} placeholder="Enter shared password" required/></label><button className="primary-button full-button" type="submit" disabled={busy || isDemoMode}>{busy ? 'VERIFYING…' : 'VERIFY & CONTINUE'} <ArrowRight size={15}/></button>{isDemoMode && <small className="setup-note"><LockKeyhole size={13}/> Member login activates after Supabase setup.</small>}<button className="text-back" type="button" onClick={() => setMemberStage('access')}><ArrowLeft size={14}/> Back to access choices</button></form>}
-            {memberStage === 'choose' && <div className="member-picker"><div className="member-card-grid">{MEMBERS.map((member) => <button className="member-card" key={member.code} onClick={() => { setSelectedMember(member); setMemberStage('individual'); }}><span>{member.code}</span><strong>{member.name}</strong><small>{member.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</small></button>)}</div><button className="text-back" onClick={() => setMemberStage('shared')}><ArrowLeft size={14}/> Back</button></div>}
-            {memberStage === 'individual' && <form className="modal-form" onSubmit={signInMember}><div className="selected-member"><span>{selectedMember?.code}</span><strong>{selectedMember?.name}</strong><small>{selectedMember?.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</small></div><label>Individual password<input type="password" autoComplete="current-password" value={individualPassword} onChange={(e) => setIndividualPassword(e.target.value)} placeholder="Enter your individual password" required/></label><button className="primary-button full-button" type="submit" disabled={busy}>{busy ? 'SIGNING IN…' : 'OPEN PERSONAL PROFILE'} <ArrowRight size={15}/></button><button className="text-back" type="button" onClick={() => setMemberStage('choose')}><ArrowLeft size={14}/> Choose another member</button></form>}
+            {memberStage === 'choose' && <div className="member-picker"><div className="member-card-grid">{MEMBERS.map((member) => <button className="member-card" key={member.code} onClick={() => { setSelectedMember(member); setMemberStage('individual'); }}><span>{member.code}</span><strong><MemberName name={member.name}/></strong><small>{member.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</small></button>)}</div><button className="text-back" onClick={() => setMemberStage('shared')}><ArrowLeft size={14}/> Back</button></div>}
+            {memberStage === 'individual' && <form className="modal-form" onSubmit={signInMember}><div className="selected-member"><span>{selectedMember?.code}</span><strong>{selectedMember && <MemberName name={selectedMember.name}/>}</strong><small>{selectedMember?.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</small></div><label>Individual password<input type="password" autoComplete="current-password" value={individualPassword} onChange={(e) => setIndividualPassword(e.target.value)} placeholder="Enter your individual password" required/></label><button className="primary-button full-button" type="submit" disabled={busy}>{busy ? 'SIGNING IN…' : 'OPEN PERSONAL PROFILE'} <ArrowRight size={15}/></button><button className="text-back" type="button" onClick={() => setMemberStage('choose')}><ArrowLeft size={14}/> Choose another member</button></form>}
             <div className="modal-security"><ShieldCheck size={14}/> Secure member access · Individual accounts</div>
           </section></div>}
       {toast && view === 'public' && <div className="toast"><Check size={16}/>{toast}</div>}

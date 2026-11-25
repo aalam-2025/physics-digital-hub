@@ -1,61 +1,63 @@
-# PHYSICS DIGITAL HUB — Project Status
+# PHYSICS DIGITAL HUB — Phase 3A Status
 
-**Baseline:** V1.1.1 source package  
-**Last checked:** 24 November 2026
-**Current development checkpoint:** Phase 2 — visitor journey usability improvement  
-**Working copy:** Extracted from `physics-digital-hub-main.zip`; the uploaded archive remains unchanged.
+**Checkpoint:** V1.2.0 · Phase 3A — Dual Axis Solar Tracker identity and eight-member integration  
+**Source baseline:** Uploaded `physics-digital-hub-main.zip`  
+**Project:** Dual Axis Solar Tracker — 3D Working Model  
+**Updated:** 25 November 2026
 
-## Project objective
+## Phase 3A scope completed in this source checkpoint
 
-The public site supports the physical S.K.S Public School hydraulic construction crane exhibition. A visitor scans a QR code printed on the model and sees the welcome screen, the six-member team showcase, and then an approximately 100-second AI-generated video explaining the model. The private member dashboard remains a separate management feature.
+- Replaced the public project identity with **Dual Axis Solar Tracker — 3D Working Model** across the welcome experience, project labels, video title, metadata, emergency page, favicon, package description, and documentation.
+- Replaced the earlier project illustration with a solar-tracker SVG scene using a photovoltaic panel, two-axis support, solar path/orbit accents, and a sun motif.
+- Integrated the final eight-person roster in the approved order and codes:
 
-## Baseline findings
-
-| Area | Current evidence | Status |
+| Code | Member | Role / designation |
 |---|---|---|
-| Source archive | ZIP integrity check passed; 51 archive entries extracted | Passed |
-| Required project files | Project verifier found all 19 required files | Passed |
-| Six team names | Verifier confirms all six expected names | Passed |
-| Public visitor sequence | Welcome → six-member showcase → video; manual Continue controls added alongside automatic transitions | Implemented and locally verified |
-| Intro reading accessibility | Reduced-motion no longer shortens the reading windows; 4-second welcome and 5-second team timing retained | Implemented and locally verified |
-| Welcome/team timing | About 4 seconds and 5 seconds; reduced-motion alternatives exist | Implemented in source |
-| Explainer video | Vimeo player integration exists, but the archive has no configured video ID/hash or MP4 URL | Pending external media/configuration |
-| QR code | No permanent production URL is available in this source package | Pending deployment |
-| Supabase | Migration and three Edge Function sources exist; no live project verification performed | Pending configuration and live tests |
-| Six member accounts | Local provisioning script exists; credentials/accounts are not included | Pending secure provisioning |
-| Render hosting | Static-site configuration exists; live deployment not verified | Pending deployment |
-| Production build | Could not run because dependencies are absent and npm registry access failed with DNS `EAI_AGAIN` during installation | Blocked by environment/network |
+| 01 | Aman Alam | Administrator |
+| 02 | Abhirup Baru | Project Member · Project Leader |
+| 03 | Anik Ghosh | Project Member |
+| 04 | Saheb Mukherjee | Project Member |
+| 05 | Sandipan Mukherjee | Project Member |
+| 06 | Ananya Gope | Project Member |
+| 07 | Neha Kumari | Project Member |
+| 08 | Khushi Rawani | Project Member |
 
-## Phase 2 verification notes — 24 November 2026
+- Added a gold **PROJECT LEADER** badge beside Abhirup Baru wherever his name is displayed in the public team credits, member access selection, selected profile, dashboard identity, overview team list, member directory, and directory CSV designation column.
+- Kept the leadership designation separate from database permissions: Aman remains the sole administrator, and Abhirup remains a normal `member` role.
+- Updated local secure member-account provisioning to support all eight accounts.
+- Updated the fresh-install profile-code constraint and added an upgrade migration that safely remaps the three existing members whose codes change, using temporary unique values before assigning their final codes.
+- Updated the verifier to check the exact eight-member order, frontend/provisioning consistency, Project Leader display hooks, solar identity, schema migration, visitor journey, reduced-motion behaviour, emergency configuration, and secret-file exclusions.
+- Removed the retired AI credit line and all superseded project identity text from source content and metadata.
 
-- `npm run verify` passes with the new checks for the QR visitor navigation, full reading windows, and reduced-motion team-name visibility.
-- Node.js syntax checks pass for both local `.mjs` scripts.
-- TypeScript transpilation syntax checks pass for the eight frontend and Supabase `.ts`/`.tsx` source files. This checks syntax only, not full project type correctness.
-- A network-backed dependency installation attempt timed out. An offline installation check confirmed the npm cache does not contain the Supabase package metadata, so dependencies and a reproducible lockfile cannot yet be restored in this environment.
-- The full `tsc -b` typecheck and Vite production build remain unverified until dependencies can be installed.
+## Important deployment steps still required
 
-## Immediate development sequence
+The ZIP updates source code only. It does **not** apply changes to a live Supabase or Render project.
 
-1. Restore dependency installation and generate a reproducible lockfile; run TypeScript and Vite production build.
-2. Complete a code-level review of frontend, SQL migration, and all Edge Functions; fix verified defects without rewriting working features.
-3. Confirm the intended Supabase project and environment values, then apply migration and deploy/test backend functions.
-4. Provision all six accounts securely using the local script; verify administrator/member permissions.
-5. Produce and approve the approximately 100-second AI-generated project explainer; configure Vimeo and the independent MP4 fallback.
-6. Deploy to the permanent HTTPS Render URL and run the full public, mobile, member, analytics, backup, and fallback acceptance tests.
-7. Generate the QR code from the final URL, scan it from more than one phone/network, then print and attach it to the physical model.
+1. Upload the extracted project files to the existing GitHub repository's `main` branch and commit them.
+2. For an existing Supabase database, apply `supabase/migrations/202611250001_phase3a_eight_member_roster.sql` in the SQL Editor. For a new database, run the initial migration and then the Phase 3A migration.
+3. On a trusted local computer, configure `scripts/.env.admin.local` and run `node scripts/bootstrap-members.mjs` to create/update the eight Auth accounts and profile rows. Enter passwords only in the local terminal. The script updates each named account's password as part of its existing secure setup process.
+4. Confirm the eight profiles and their codes in Supabase, and verify that only Aman has the `admin` role.
+5. Confirm Render's automatic deployment and test the public experience and member portal on real devices.
+6. Upload/configure the new Dual Axis Solar Tracker explainer video separately. Video upload and redesign phases 3B–3D are not included in this checkpoint.
 
-## Release gates
+## Verification record
 
-- Do not print the QR code before the permanent production URL is final.
-- Do not mark the video complete until the actual approximately 100-second explainer is uploaded and playback is tested on mobile data and Wi-Fi.
-- Do not mark the application production-ready based only on the project verification script; TypeScript/Vite build and live Supabase tests are required.
-- Never place Supabase service-role/secret keys or member passwords in frontend environment variables, chat, or the public repository.
+Checks run for this checkpoint:
 
-## Current modifications
+- `npm run verify` — passed.
+- `node --check scripts/bootstrap-members.mjs` — passed.
+- `node --check scripts/verify-project.mjs` — passed.
+- TypeScript/TSX syntax transpilation and CSS/HTML/SVG/JSON structure checks — performed.
+- ZIP CRC/integrity verification — performed before delivery.
 
-- Added a visible **Meet the Team** control on the welcome screen and a **Watch Project Explanation** control on the team screen. Visitors can now move forward without waiting for the automatic timers.
-- Fixed reduced-motion timing so accessibility preferences remove animation effects without cutting the time available to read the six team names.
-- Extended `scripts/verify-project.mjs` to protect the manual visitor navigation and the 4/5-second reading windows.
-- Updated this status tracker and the README to document the visitor navigation behaviour.
+The TypeScript typecheck and Vite production build could not be completed in this environment: `npm install` timed out while npm could not resolve `registry.npmjs.org` (`EAI_AGAIN`). No dependencies are bundled in the ZIP. Run `npm install` and `npm run build` after downloading it in an environment with npm registry access.
 
-No credentials, database schema, secrets, or live deployment settings were changed. The final video and its external links remain pending.
+A source-level check does not prove a live Supabase migration, successful account provisioning, Edge Function deployment, or Render deployment. Those operations must be confirmed against the actual connected services.
+
+## Scope boundaries
+
+- **3A:** Project identity, final eight-member roster, Project Leader badge, account provisioning support, schema upgrade, verification and documentation — included here.
+- **3B:** Full visual transformation — separate future phase.
+- **3C:** Administrator video upload and persistent storage — separate future phase.
+- **3D:** Solar-themed Members Portal redesign — separate future phase.
+- **3E:** Full live testing and acceptance — follows implementation and deployment.

@@ -1,20 +1,20 @@
-# PHYSICS DIGITAL HUB — V1.1.1
+# PHYSICS DIGITAL HUB — V1.2.0
 
-A React + TypeScript website for the S.K.S Public School Annual Exhibition hydraulic construction crane project.
+A React + TypeScript website for the S.K.S Public School Annual Exhibition **Dual Axis Solar Tracker — 3D Working Model**.
 
-## V1.1.1 update
+## V1.2.0 update
 
 This revision keeps the approved three-screen public journey and strengthens the planned member, analytics, video, and reliability features:
 
-- Silent cinematic welcome screen (about 4 seconds) and six-member showcase (about 5 seconds), with automatic fail-forward and reduced-motion support.
+- Silent cinematic welcome screen (about 4 seconds) and eight-member showcase (about 5 seconds), with automatic fail-forward and reduced-motion support.
 - The approved S.K.S Public School crest and original supplied school logo are included in `public/assets/`.
 - Minimal public video experience: one main Vimeo film, independent MP4 download, Like/Unlike, anonymous comments, and the small member-access icon. Project explanations belong in the video, not extra public sections.
 - Comments open in a desktop side panel and a mobile slide-up panel.
 - Vimeo supports both a numeric video ID and the privacy hash used for unlisted videos.
-- Viewer / Project Member access choice, shared-password gate, six animated member cards, and an individual Supabase Auth login for each member.
-- Six-member directory inside the private dashboard, showing member codes, names, roles, and account status, with CSV export. Internal sign-in identifiers are not displayed or exported.
-- Aman Alam is enforced as the sole administrator by the database role/member-code constraint and server-side checks. The other five accounts remain members.
-- All six members can view shared analytics and delete comments. Only Aman can change the active video, announcement, and exhibition information. These controls exist only in the private member area.
+- Viewer / Project Member access choice, shared-password gate, eight animated member cards, and an individual Supabase Auth login for each member.
+- Eight-member directory inside the private dashboard, showing member codes, names, roles, and account status, with CSV export. Internal sign-in identifiers are not displayed or exported.
+- Aman Alam is enforced as the sole administrator by the database role/member-code constraint and server-side checks. The other seven accounts remain members.
+- All eight members can view shared analytics and delete comments. Only Aman can change the active video, announcement, and exhibition information. These controls exist only in the private member area.
 - Server-side SQL aggregation for the selected 7/30/90-day analytics range, recent activity, live-visitor estimate, chart data, and paginated CSV export with an explicit safety-limit warning.
 - Admin-only manual JSON backup includes site settings, member directory, active comments, comment-deletion audit entries, hashed analytics identifiers, and hashed Like identifiers. It never exports passwords, access tokens, or Supabase secrets. Large exports report truncation flags.
 - Atomic server-side Like toggling, server-side request limits, hashed visitor identifiers, and no invasive device fingerprinting.
@@ -22,33 +22,33 @@ This revision keeps the approved three-screen public journey and strengthens the
 - The Overview and Analytics dashboards quietly refresh every 60 seconds while visible, keeping recent activity and the estimated active-visitor metric fresher without requiring manual refresh.
 - Scene-entry transitions, subtle crest illumination, and title sheen add cinematic polish; all are suppressed by reduced-motion preferences and remain silent.
 - SEO metadata, social-preview metadata, a crawlable `robots.txt`, and a no-JavaScript fallback are included for public discovery and resilience.
-- A pre-build verification script checks required assets, project files, emergency configuration shape, and the six member names. GitHub Actions runs the production build on pushes and pull requests.
+- A pre-build verification script checks required assets, project files, emergency configuration shape, and the eight member names. GitHub Actions runs the production build on pushes and pull requests.
 - Supabase Edge Functions, database schema, secure local account bootstrap script, Render Static Site configuration, and emergency video fallback page.
 
 ## Important status
 
-This is the **V1.1.1 source-code package**, not a deployed or production-verified website. The package still needs your Supabase project, six locally provisioned accounts, the shared password hash and server secrets, Vimeo video details, GitHub Release MP4 URL, Render environment variables, and live tests. No passwords, provider keys, Vimeo IDs, or personal account credentials are included.
+This is the **V1.2.0 source-code package**, not a deployed or production-verified website. The package still needs your Supabase project, eight locally provisioned accounts, the shared password hash and server secrets, Vimeo video details, GitHub Release MP4 URL, Render environment variables, and live tests. No passwords, provider keys, Vimeo IDs, or personal account credentials are included.
 
 Synthetic internal sign-in identifiers in the source code are Supabase Auth implementation details, not real contact email addresses. They are never displayed in the member dashboard, API responses, or member-directory exports.
 
 ## Public QR visitor experience
 
-The public homepage is the destination for the QR code printed on the physical hydraulic construction crane model. A visitor should be able to scan the code with a phone camera and follow this sequence without signing in:
+The public homepage is the destination for the QR code printed on the physical Dual Axis Solar Tracker 3D working model. A visitor should be able to scan the code with a phone camera and follow this sequence without signing in:
 
 1. **Welcome screen** — a silent cinematic introduction to PHYSICS DIGITAL HUB and S.K.S Public School (about 4 seconds).
-2. **Team showcase** — the six project members are introduced (about 5 seconds).
-3. **Project explainer** — the main video explains the physical model, its working mechanism, and the relevant physics concepts. The intended final AI-generated explainer is approximately 100 seconds long.
+2. **Team showcase** — the eight project members are introduced (about 5 seconds).
+3. **Project explainer** — the main video explains the physical model, its working mechanism, and the relevant physics concepts. The intended final AI-generated explainer is approximately 100 seconds long and should demonstrate the two-axis Sun-tracking mechanism accurately.
 
 The current React application implements the welcome → team → video screen sequence. Visitors can use the on-screen Continue controls to move at their own pace; automatic transitions remain as a convenience. Reduced-motion preferences disable motion styling but do not shorten the time available to read the welcome or team screens. The final explainer itself and its Vimeo/MP4 configuration are still external project inputs; do not treat the placeholder player as a completed video. The QR code must not be printed until the production HTTPS URL is final and has been tested by scanning it from a separate phone.
 
 ## 1. Connect the services in this order
 
-1. **GitHub:** Keep the source repository Public, as requested. Connect the repository to Render after the V1.1 source has been uploaded.
-2. **Supabase:** Create the project, run the migration, provision the six accounts locally, set the Edge Function secrets, and deploy the three functions.
+1. **GitHub:** Keep the source repository Public, as requested. Connect the repository to Render after the V1.2 source has been uploaded.
+2. **Supabase:** Create the project, run the migration, provision the eight accounts locally, set the Edge Function secrets, and deploy the three functions.
 3. **Vimeo:** Upload the single explainer video; configure embedding/privacy; record the video ID and, for an unlisted video, its privacy hash.
 4. **GitHub Releases:** Upload the separate MP4 file as a Release asset and copy its direct HTTPS download URL.
 5. **Render:** Create a Static Site from the GitHub repository and add the frontend environment variables.
-6. **Live testing:** Test all public flows, all six accounts, permissions, video, comments, Likes, analytics, backup, responsive layout, and fallback behaviour before generating the QR code.
+6. **Live testing:** Test all public flows, all eight accounts, permissions, video, comments, Likes, analytics, backup, responsive layout, and fallback behaviour before generating the QR code.
 
 The user's selected workflow is to connect the four services and test the deployed website directly. A local preview is optional for troubleshooting, but final acceptance testing must be performed against the live Render URL.
 
@@ -76,15 +76,14 @@ Use only the Supabase publishable/anon key in the frontend. **Never** put the Su
 
 ## 3. Supabase database
 
-In the Supabase SQL Editor, run the complete file:
+In the Supabase SQL Editor:
 
-```text
-supabase/migrations/202611200001_initial_schema.sql
-```
+- **Existing database:** run `supabase/migrations/202611250001_phase3a_eight_member_roster.sql` once. It remaps the three existing member codes that change safely and preserves Auth user/profile IDs.
+- **New database:** run `supabase/migrations/202611200001_initial_schema.sql`, then the Phase 3A migration above. The second migration is safe when the profiles table is empty.
 
 It creates:
 
-- Six-member profile directory and single-admin enforcement.
+- Eight-member profile directory and single-admin enforcement.
 - Video, announcement, and exhibition settings, including Vimeo privacy hash.
 - Anonymous comments and deletion audit.
 - Hashed analytics events, Like records, and request-rate buckets.
@@ -94,30 +93,34 @@ It creates:
 In Supabase Authentication settings:
 
 - Enable Email sign-in.
-- Disable public new-user signups; only the six prepared project accounts should exist.
+- Disable public new-user signups; only the eight prepared project accounts should exist.
 - No password-reset/recovery flow is included, per the project decision.
 - The website uses synthetic `.test` identifiers only for internal Supabase password authentication. These are not real email addresses, and members never see or enter them. If Supabase rejects these identifiers during account setup, stop and resolve the issue before creating accounts. Never use anyone's real email address without permission.
 
-## 4. Provision the six member accounts securely
+## 4. Provision the eight member accounts securely
 
 After `npm install` on a trusted computer:
 
 1. Copy `scripts/.env.admin.example` to `scripts/.env.admin.local`.
 2. Add your Supabase URL and server-only Supabase Secret API key (`SUPABASE_SECRET_KEY`) locally.
 3. Run `node scripts/bootstrap-members.mjs` from the project root.
-4. Enter the shared website password and each member's individual password in the local terminal. The minimum is 9 characters; unique passwords of 12 or more characters are recommended.
-5. The script creates or updates the six Auth accounts and matching profile records. It writes only a PBKDF2 hash of the shared password and random server secrets to `supabase/functions/.env`.
+4. Enter the shared website password and each member's individual password in the local terminal. The minimum is 9 characters; unique passwords of 12 or more characters are recommended. The script updates the passwords of existing accounts too, so coordinate the new credentials with each member.
+5. The script creates or updates the eight Auth accounts and matching profile records. It writes only a PBKDF2 hash of the shared password and random server secrets to `supabase/functions/.env`.
 
-The six fixed project identities are:
+The eight fixed project identities are:
 
-| Code | Member | Role |
+| Code | Member | Role / designation |
 |---|---|---|
 | 01 | Aman Alam | Sole administrator |
-| 02 | Abhirup Baru | Member |
-| 03 | Sandipan Mukherjee | Member |
-| 04 | Khushi Rawani | Member |
-| 05 | Neha Kumari | Member |
-| 06 | Ananya Gope | Member |
+| 02 | Abhirup Baru | Project Member · **Project Leader** |
+| 03 | Anik Ghosh | Project Member |
+| 04 | Saheb Mukherjee | Project Member |
+| 05 | Sandipan Mukherjee | Project Member |
+| 06 | Ananya Gope | Project Member |
+| 07 | Neha Kumari | Project Member |
+| 08 | Khushi Rawani | Project Member |
+
+Abhirup Baru receives a visible **PROJECT LEADER** badge wherever his name appears in the website. This designation is separate from access permissions: he remains a Project Member; Aman Alam remains the sole administrator.
 
 Do not paste passwords into chat, GitHub, or source files. Keep `scripts/.env.admin.local` and `supabase/functions/.env` private; both are ignored by Git.
 
@@ -161,17 +164,17 @@ Do not stream the MP4 through Render. Render serves only the static website, Vim
 - [ ] Render production build succeeds and HTTPS URL opens.
 - [ ] Scan the final production QR code from a separate phone and confirm it opens the public experience without login.
 - [ ] Welcome screen advances after about 4 seconds; no sound plays.
-- [ ] Members showcase reveals the exact six names and advances after about 5 seconds.
+- [ ] Members showcase reveals the exact eight names and advances after about 5 seconds.
 - [ ] Reduced-motion mode does not leave the visitor stuck.
 - [ ] Public QR/viewer route needs no login.
 - [ ] Person icon offers Viewer and Project Member.
 - [ ] Viewer returns to the public three-screen journey.
 - [ ] Project Member must pass the shared-password gate before selecting a profile.
-- [ ] Each of the six individual passwords opens only its matching account.
-- [ ] Aman is the only administrator; five others remain members.
-- [ ] All six can view the shared analytics and delete public comments.
+- [ ] Each of the eight individual passwords opens only its matching account.
+- [ ] Aman is the only administrator; the other seven accounts remain members.
+- [ ] All eight can view the shared analytics and delete public comments.
 - [ ] Only Aman can update/publish the active video and update website announcements/exhibition information.
-- [ ] The AI-generated project explainer is approximately 100 seconds and accurately explains the physical model, its working mechanism, and the relevant physics concepts.
+- [ ] The solar-tracker explainer is approximately 100 seconds and accurately explains the Dual Axis Solar Tracker, its two-axis movement, and the solar-energy concepts behind the model.
 - [ ] Vimeo playback works, including its privacy hash if the video is unlisted.
 - [ ] GitHub Release MP4 downloads correctly.
 - [ ] Likes toggle and counts remain consistent across browsers.
@@ -205,7 +208,7 @@ physics-digital-hub/
 ├── supabase/migrations/            # Database schema, security and analytics RPC
 ├── supabase/functions/             # Public, shared-gate and member APIs
 ├── supabase/maintenance/           # Scheduled 72-hour comment cleanup
-├── scripts/                        # Local secure six-account bootstrap and project verifier
+├── scripts/                        # Local secure eight-account bootstrap and project verifier
 ├── .env.example                    # Frontend configuration template
 ├── .github/workflows/build.yml     # Production build verification
 ├── render.yaml                     # Render Static Site configuration

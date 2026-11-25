@@ -98,10 +98,12 @@ function createSecretKeyFetch(secretKey) {
 const members = [
   { member_code: '01', display_name: 'Aman Alam', email_alias: 'aman@physicsdigitalhub.test', role: 'admin' },
   { member_code: '02', display_name: 'Abhirup Baru', email_alias: 'abhirup@physicsdigitalhub.test', role: 'member' },
-  { member_code: '03', display_name: 'Sandipan Mukherjee', email_alias: 'sandipan@physicsdigitalhub.test', role: 'member' },
-  { member_code: '04', display_name: 'Khushi Rawani', email_alias: 'khushi@physicsdigitalhub.test', role: 'member' },
-  { member_code: '05', display_name: 'Neha Kumari', email_alias: 'neha@physicsdigitalhub.test', role: 'member' },
+  { member_code: '03', display_name: 'Anik Ghosh', email_alias: 'anik@physicsdigitalhub.test', role: 'member' },
+  { member_code: '04', display_name: 'Saheb Mukherjee', email_alias: 'saheb@physicsdigitalhub.test', role: 'member' },
+  { member_code: '05', display_name: 'Sandipan Mukherjee', email_alias: 'sandipan@physicsdigitalhub.test', role: 'member' },
   { member_code: '06', display_name: 'Ananya Gope', email_alias: 'ananya@physicsdigitalhub.test', role: 'member' },
+  { member_code: '07', display_name: 'Neha Kumari', email_alias: 'neha@physicsdigitalhub.test', role: 'member' },
+  { member_code: '08', display_name: 'Khushi Rawani', email_alias: 'khushi@physicsdigitalhub.test', role: 'member' },
 ];
 
 async function main() {
@@ -119,7 +121,7 @@ const supabase = createClient(env.SUPABASE_URL, supabaseSecretKey, {
   },
 });
 
-  console.log('\nPHYSICS DIGITAL HUB — secure member-account setup');
+  console.log('\nPHYSICS DIGITAL HUB — eight-member secure account setup');
   console.log(`Passwords are entered locally and are not printed. Use unique passwords of at least ${MIN_PASSWORD_LENGTH} characters; 12 or more is recommended.\n`);
 
   const sharedPassword = await ask('Shared website password (hidden): ', true);
@@ -186,7 +188,7 @@ const supabase = createClient(env.SUPABASE_URL, supabaseSecretKey, {
   const secretsPath = path.join(root, 'supabase', 'functions', '.env');
   fs.writeFileSync(secretsPath, secrets, { mode: 0o600 });
 
-  console.log('\nAll six accounts and their profile records are ready.');
+  console.log('\nAll eight accounts and their profile records are ready.');
   console.log('The shared-password hash and server-only signing/rate-limit secrets were written to:');
   console.log('  supabase/functions/.env');
   console.log('\nNext command to publish those secrets:');

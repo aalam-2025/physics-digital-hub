@@ -6,7 +6,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.profiles (
   id uuid primary key default gen_random_uuid(),
   auth_user_id uuid not null unique references auth.users(id) on delete cascade,
-  member_code text not null unique check (member_code in ('01','02','03','04','05','06')),
+  member_code text not null unique check (member_code in ('01','02','03','04','05','06','07','08')),
   display_name text not null,
   email_alias text not null unique,
   role text not null check (role in ('admin','member')),
