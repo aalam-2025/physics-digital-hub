@@ -29,7 +29,7 @@ Deno.serve(async (request: Request) => {
   if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed.' }, 405);
   try {
     const admin = getAdminClient();
-    if (!await enforceLimit(admin, request, 'shared-gate', 5, 900)) return jsonResponse({ error: 'Too many attempts. Please try again later.' }, 429);
+    if (!await enforceLimit(admin, request, 'shared-gate', 20, 60)) return jsonResponse({ error: 'Too many attempts. Please try again later.' }, 429);
     const body = await request.json() as { password?: unknown };
     const password = typeof body.password === 'string' ? body.password : '';
     if (password.length < 1 || password.length > 256) return jsonResponse({ error: 'Enter the shared website password.' }, 400);
