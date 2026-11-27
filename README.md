@@ -1,8 +1,8 @@
-# PHYSICS DIGITAL HUB — V1.2.0
+# PHYSICS DIGITAL HUB — V1.3.0
 
 A React + TypeScript website for the S.K.S Public School Annual Exhibition **Dual Axis Solar Tracker — 3D Working Model**.
 
-## V1.2.0 update
+## V1.3.0 — Phase 3B visual transformation
 
 This revision keeps the approved three-screen public journey and strengthens the planned member, analytics, video, and reliability features:
 
@@ -25,9 +25,25 @@ This revision keeps the approved three-screen public journey and strengthens the
 - A pre-build verification script checks required assets, project files, emergency configuration shape, and the eight member names. GitHub Actions runs the production build on pushes and pull requests.
 - Supabase Edge Functions, database schema, secure local account bootstrap script, Render Static Site configuration, and emergency video fallback page.
 
+
+
+### Phase 3B visual upgrade
+
+- Premium solar-technology visual system with midnight navy, graphite, solar amber/gold, technical blue, and soft-white accents.
+- Refined cinematic typography, animated solar-spectrum gradients, light sweeps, orbital details, and polished glass-like surfaces.
+- Flagship eight-member Team Showcase with responsive premium cards, pointer-following solar highlights, controlled perspective tilt, and a solar information marquee.
+- **Solar Signal Resolve:** the Team Showcase heading and each member name resolve from brief technical glyphs into the exact readable wording. The effect runs once per screen entry and respects reduced-motion settings.
+- **Solar Spark:** randomized gold, amber, white, and blue particle bursts on pointer clicks/taps and keyboard activation. The effect is pointer-transparent, short-lived, capped, and disabled for reduced-motion users.
+- Refined public welcome/video presentation, Member Access screens, and all five private-dashboard sections.
+- Field-level friendly authentication errors. The Supabase client extracts safe JSON error details from Edge Function responses and the UI maps wrong passwords, rate limiting, expired sessions, and service failures to understandable messages instead of showing generic transport errors.
+- Responsive pointer effects on suitable devices, mobile-specific layouts, visible keyboard focus, and reduced-motion support.
+- Preserved the Phase 3A roster, accounts, role permissions, existing backend, and the live shared-gate limit of 20 attempts per 60 seconds.
+
+See `PHASE_3B_PLAN.md` and `PROJECT_STATUS.md` for implementation notes and live acceptance checks.
+
 ## Important status
 
-This is the **V1.2.0 source-code package**, not a deployed or production-verified website. The package still needs your Supabase project, eight locally provisioned accounts, the shared password hash and server secrets, Vimeo video details, GitHub Release MP4 URL, Render environment variables, and live tests. No passwords, provider keys, Vimeo IDs, or personal account credentials are included.
+This is the **V1.3.0 Phase 3B source-code package**. It is not itself a live deployment; the included frontend and Edge Function source still need to be uploaded and deployed through your established GitHub/Render/Supabase workflow. The package still needs your Supabase project, eight locally provisioned accounts, the shared password hash and server secrets, Vimeo video details, GitHub Release MP4 URL, Render environment variables, and live tests. No passwords, provider keys, Vimeo IDs, or personal account credentials are included.
 
 Synthetic internal sign-in identifiers in the source code are Supabase Auth implementation details, not real contact email addresses. They are never displayed in the member dashboard, API responses, or member-directory exports.
 
@@ -43,7 +59,7 @@ The current React application implements the welcome → team → video screen s
 
 ## 1. Connect the services in this order
 
-1. **GitHub:** Keep the source repository Public, as requested. Connect the repository to Render after the V1.2 source has been uploaded.
+1. **GitHub:** Keep the source repository Public, as requested. Connect the repository to Render after the V1.3.0 Phase 3B source has been uploaded.
 2. **Supabase:** Create the project, run the migration, provision the eight accounts locally, set the Edge Function secrets, and deploy the three functions.
 3. **Vimeo:** Upload the single explainer video; configure embedding/privacy; record the video ID and, for an unlisted video, its privacy hash.
 4. **GitHub Releases:** Upload the separate MP4 file as a Release asset and copy its direct HTTPS download URL.

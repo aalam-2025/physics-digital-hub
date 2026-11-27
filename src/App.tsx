@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent, ReactNode } from 'react';
+import type { FormEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import Player from '@vimeo/player';
 import {
   Activity, ArrowDownToLine, ArrowLeft, ArrowRight, BarChart3, Check, Download,
@@ -165,6 +165,186 @@ function SolarTrackerBlueprint() {
   );
 }
 
+type ScrambleTextProps = { text: string; delay?: number; duration?: number; className?: string };
+
+function ScrambleText({ text, delay = 0, duration = 760, className = '' }: ScrambleTextProps) {
+  const characters = Array.from(text);
+  const [display, setDisplay] = useState(() => characters.map((character) => /\s/.test(character) ? character : '·').join(''));
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (media.matches) {
+      setDisplay(text);
+      return;
+    }
+
+    const glyphs = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789+×·:=';
+    let animationFrame = 0;
+    let startTimer = 0;
+    let startedAt = 0;
+    let lastPaint = 0;
+    const total = Math.max(1, characters.filter((character) => !/\s/.test(character)).length);
+
+    const animate = (now: number) => {
+      if (!startedAt) startedAt = now;
+      const progress = Math.min(1, Math.max(0, (now - startedAt) / duration));
+      if (now - lastPaint >= 32 || progress >= 1) {
+        const resolved = Math.floor(progress * total);
+        let count = 0;
+        const next = characters.map((character) => {
+          if (/\s/.test(character)) return character;
+          const position = count++;
+          if (position < resolved || progress >= 1) return character;
+          return glyphs[Math.floor(Math.random() * glyphs.length)];
+        }).join('');
+        setDisplay(next);
+        lastPaint = now;
+      }
+      if (progress < 1) animationFrame = window.requestAnimationFrame(animate);
+      else setDisplay(text);
+    };
+
+    startTimer = window.setTimeout(() => {
+      animationFrame = window.requestAnimationFrame(animate);
+    }, Math.max(0, delay));
+
+    return () => {
+      window.clearTimeout(startTimer);
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [text, delay, duration]);
+
+  return <span className={`scramble-text ${className}`.trim()} role="text" aria-label={text}><span aria-hidden="true">{display}</span></span>;
+}
+
+type SolarParticle = { x: number; y: number; vx: number; vy: number; life: number; maxLife: number; radius: number; color: string; spin: number };
+
+function SolarParticleCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    if (!canvas || !context) return;
+
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    let pixelRatio = Math.min(window.devicePixelRatio || 1, 1.65);
+    let particles: SolarParticle[] = [];
+    let frame = 0;
+    let lastTime = 0;
+    const palette = ['#ffd27a', '#ffb84d', '#fff0c2', '#76e7ff', '#f5fbff'];
+
+    const resize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 1.65);
+      canvas.width = Math.round(width * pixelRatio);
+      canvas.height = Math.round(height * pixelRatio);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    };
+
+    const animate = (time: number) => {
+      const delta = lastTime ? Math.min(34, time - lastTime) / 16.67 : 1;
+      lastTime = time;
+      context.clearRect(0, 0, width, height);
+      particles = particles.filter((particle) => particle.life > 0);
+      for (const particle of particles) {
+        particle.life -= delta;
+        particle.x += particle.vx * delta;
+        particle.y += particle.vy * delta;
+        particle.vx *= Math.pow(0.985, delta);
+        particle.vy = particle.vy * Math.pow(0.985, delta) + 0.045 * delta;
+        const alpha = Math.max(0, particle.life / particle.maxLife);
+        context.save();
+        context.globalAlpha = alpha;
+        context.translate(particle.x, particle.y);
+        context.rotate(particle.spin * (1 - alpha));
+        context.shadowColor = particle.color;
+        context.shadowBlur = 9 * alpha;
+        context.fillStyle = particle.color;
+        context.beginPath();
+        context.arc(0, 0, particle.radius * (0.6 + alpha * 0.4), 0, Math.PI * 2);
+        context.fill();
+        context.restore();
+      }
+
+      if (particles.length) frame = window.requestAnimationFrame(animate);
+      else {
+        frame = 0;
+        lastTime = 0;
+        context.clearRect(0, 0, width, height);
+      }
+    };
+
+    const burst = (event: PointerEvent) => {
+      if (motionPreference.matches || document.visibilityState !== 'visible') return;
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      const count = event.pointerType === 'touch' ? 13 : 16;
+      const originX = Math.max(0, Math.min(width, event.clientX));
+      const originY = Math.max(0, Math.min(height, event.clientY));
+      for (let index = 0; index < count; index += 1) {
+        const angle = (Math.PI * 2 * index / count) + (Math.random() - 0.5) * 0.42;
+        const speed = 42 + Math.random() * 118;
+        const life = 26 + Math.random() * 20;
+        particles.push({
+          x: originX,
+          y: originY,
+          vx: Math.cos(angle) * speed / 60,
+          vy: Math.sin(angle) * speed / 60,
+          life,
+          maxLife: life,
+          radius: 0.8 + Math.random() * 2.35,
+          color: palette[Math.floor(Math.random() * palette.length)],
+          spin: (Math.random() - 0.5) * 1.4,
+        });
+      }
+      if (particles.length > 150) particles = particles.slice(-150);
+      if (!frame) frame = window.requestAnimationFrame(animate);
+    };
+
+    const keyboardActivation = (event: MouseEvent) => {
+      if (event.detail !== 0 || motionPreference.matches || document.visibilityState !== 'visible') return;
+      const target = event.target instanceof Element ? event.target.closest('button,a,input,textarea,select,[role=button]') : null;
+      const bounds = target?.getBoundingClientRect();
+      const syntheticPointer = {
+        pointerType: 'keyboard',
+        button: 0,
+        clientX: bounds ? bounds.left + bounds.width / 2 : width / 2,
+        clientY: bounds ? bounds.top + bounds.height / 2 : height / 2,
+      } as PointerEvent;
+      burst(syntheticPointer);
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        particles = [];
+        if (frame) window.cancelAnimationFrame(frame);
+        frame = 0;
+        context.clearRect(0, 0, width, height);
+      }
+    };
+
+    resize();
+    window.addEventListener('resize', resize, { passive: true });
+    window.addEventListener('pointerdown', burst, { passive: true });
+    window.addEventListener('click', keyboardActivation, { passive: true });
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('pointerdown', burst);
+      window.removeEventListener('click', keyboardActivation);
+      document.removeEventListener('visibilitychange', onVisibility);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="solar-particle-canvas" aria-hidden="true" />;
+}
+
 const PROJECT_LEADER_NAME = 'Abhirup Baru';
 function isProjectLeader(name: string | null | undefined): boolean {
   return name?.trim() === PROJECT_LEADER_NAME;
@@ -172,8 +352,52 @@ function isProjectLeader(name: string | null | undefined): boolean {
 function ProjectLeaderBadge() {
   return <span className="project-leader-badge" aria-label="Project Leader"><span aria-hidden="true">✦</span> PROJECT LEADER</span>;
 }
-function MemberName({ name }: { name: string }) {
-  return <span className="member-name-wrap"><span>{name}</span>{isProjectLeader(name) && <ProjectLeaderBadge />}</span>;
+function MemberName({ name, scramble = false, delay = 0 }: { name: string; scramble?: boolean; delay?: number }) {
+  return <span className="member-name-wrap">{scramble ? <ScrambleText text={name} delay={delay} duration={720} /> : <span>{name}</span>}{isProjectLeader(name) && <ProjectLeaderBadge />}</span>;
+}
+
+function handleCardPointerMove(event: ReactPointerEvent<HTMLElement>) {
+  if (event.pointerType === 'touch') return;
+  const element = event.currentTarget;
+  const bounds = element.getBoundingClientRect();
+  const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+  const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
+  element.style.setProperty('--card-x', `${x * 100}%`);
+  element.style.setProperty('--card-y', `${y * 100}%`);
+  const rotateX = (0.5 - y) * 4.2;
+  const rotateY = (x - 0.5) * 5.2;
+  element.style.transform = `perspective(900px) translateY(-3px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+}
+
+function handleCardPointerLeave(event: ReactPointerEvent<HTMLElement>) {
+  event.currentTarget.style.transform = '';
+  event.currentTarget.style.removeProperty('--card-x');
+  event.currentTarget.style.removeProperty('--card-y');
+}
+
+function friendlyAuthenticationMessage(error: unknown, kind: 'shared' | 'individual'): string {
+  const message = error instanceof Error ? error.message : '';
+  const normalized = message.toLowerCase();
+  if (normalized.includes('too many attempts') || normalized.includes('rate limit') || normalized.includes('429') || normalized === 'rate_limited') {
+    return 'There have been too many attempts in a short time. Please wait briefly and try again.';
+  }
+  if (normalized.includes('session expired') || normalized.includes('shared-password session') || normalized === 'access_session_expired') {
+    return 'Your access session has expired. Please verify the shared website password again.';
+  }
+  if (normalized.includes('shared website password was not accepted') || normalized.includes('invalid shared password') || normalized.includes('shared_password_not_accepted')) {
+    return 'That shared password could not be verified. Please check it and try again.';
+  }
+  if (normalized.includes('invalid_member_credentials') || normalized.includes('invalid login credentials') || normalized.includes('individual password was not accepted')) {
+    return 'That individual password was not accepted. Please check it and try again.';
+  }
+  if (normalized.includes('failed to fetch') || normalized.includes('network') || normalized.includes('temporarily unavailable') || normalized.includes('service unavailable') || normalized.includes('shared_gate_unavailable') || normalized.includes('member_service_unavailable') || normalized.includes('auth_service_unavailable')) {
+    return kind === 'shared'
+      ? 'Shared access is temporarily unavailable. Please try again in a moment.'
+      : 'We could not reach the member service. Please try again in a moment.';
+  }
+  return kind === 'shared'
+    ? 'We could not verify the shared password. Please try again.'
+    : 'We could not complete sign-in. Please check your password and try again.';
 }
 
 function App() {
@@ -188,6 +412,7 @@ function App() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [authError, setAuthError] = useState('');
   const [toast, setToast] = useState('');
   const [vimeoId, setVimeoId] = useState(env.initialVimeoId);
   const [vimeoHash, setVimeoHash] = useState(env.initialVimeoHash);
@@ -341,6 +566,7 @@ function App() {
   const verifySharedPassword = async (event: FormEvent) => {
     event.preventDefault();
     if (!sharedPassword.trim()) return;
+    setAuthError('');
     setBusy(true);
     try {
       if (isDemoMode) throw new Error('Member login activates after the Supabase setup is completed.');
@@ -350,17 +576,21 @@ function App() {
       setMemberStage('choose');
       setSharedPassword('');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Shared password was not accepted.');
+      setAuthError(friendlyAuthenticationMessage(error, 'shared'));
     } finally { setBusy(false); }
   };
 
   const signInMember = async (event: FormEvent) => {
     event.preventDefault();
     if (!selectedMember || !supabase || !gateToken) return;
+    setAuthError('');
     setBusy(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email: selectedMember.emailAlias, password: individualPassword });
-      if (error) throw new Error('That individual password was not accepted.');
+      if (error) {
+        if (/invalid login credentials/i.test(error.message)) throw new Error('INVALID_MEMBER_CREDENTIALS');
+        throw new Error('AUTH_SERVICE_UNAVAILABLE');
+      }
       const data = await memberFunction<DashboardData>({ action: 'dashboard', days: analyticsDays }, gateToken);
       setDashboard(data);
       setSettingsDraft(data.settings);
@@ -370,7 +600,7 @@ function App() {
       setProfileTab('overview');
     } catch (error) {
       await supabase.auth.signOut().catch(() => undefined);
-      showToast(error instanceof Error ? error.message : 'Member sign-in failed.');
+      setAuthError(friendlyAuthenticationMessage(error, 'individual'));
     } finally { setBusy(false); }
   };
 
@@ -485,7 +715,7 @@ function App() {
   };
 
   const openMemberPortal = () => {
-    setMemberStage('access'); setSelectedMember(null); setSharedPassword(''); setIndividualPassword('');
+    setMemberStage('access'); setSelectedMember(null); setSharedPassword(''); setIndividualPassword(''); setAuthError('');
     setMemberPortalOpen(true);
   };
 
@@ -499,6 +729,7 @@ function App() {
   if (view === 'dashboard' && dashboard) {
     return (
       <div className="dashboard-shell">
+        <SolarParticleCanvas />
         <header className="dash-topbar">
           <div className="dash-brand"><img src="/assets/sks-school-crest.webp" alt="S.K.S Public School crest" /><div><strong>PHYSICS DIGITAL HUB</strong><span>MEMBER CONTROL CENTRE</span></div></div>
           <div className="dash-user"><span className="role-pill"><ShieldCheck size={13}/>{dashboard.profile.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</span><span className="dash-user-name"><MemberName name={dashboard.profile.display_name}/></span><button className="icon-button" onClick={logout} aria-label="Sign out"><LogOut size={18}/></button></div>
@@ -525,15 +756,15 @@ function App() {
               <Metric label="Likes" value={dashboard.analytics.likes} icon={<Heart/>}/>
             </div>
             <div className="dashboard-columns">
-              <section className="panel-card"><div className="panel-title"><h2>Recent activity</h2><span>Latest events</span></div>{dashboard.events.slice(0, 7).length ? dashboard.events.slice(0, 7).map((event, index) => <div className="activity-row" key={`${event.created_at}-${index}`}><span className="activity-dot"/><div><strong>{event.event_type === 'page_visit' ? 'Project page visit' : event.event_type === 'video_play' ? 'Project video playback started' : 'Anonymous comment posted'}</strong><small>{formatTime(event.created_at)}</small></div></div>) : <EmptyState text="Analytics activity will appear here."/>}</section>
-              <section className="panel-card"><div className="panel-title"><h2>Project team</h2><span>{dashboard.members.length} members</span></div>{dashboard.members.map((member) => <div className="team-row" key={member.id}><span className="avatar-mini">{member.display_name.slice(0,1)}</span><div><strong><MemberName name={member.display_name}/></strong><small>{member.role === 'admin' ? 'Administrator' : 'Project member'}</small></div>{member.role === 'admin' && <span className="tiny-tag">ADMIN</span>}</div>)}</section>
+              <section className="panel-card" onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave}><div className="panel-title"><h2>Recent activity</h2><span>Latest events</span></div>{dashboard.events.slice(0, 7).length ? dashboard.events.slice(0, 7).map((event, index) => <div className="activity-row" key={`${event.created_at}-${index}`}><span className="activity-dot"/><div><strong>{event.event_type === 'page_visit' ? 'Project page visit' : event.event_type === 'video_play' ? 'Project video playback started' : 'Anonymous comment posted'}</strong><small>{formatTime(event.created_at)}</small></div></div>) : <EmptyState text="Analytics activity will appear here."/>}</section>
+              <section className="panel-card" onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave}><div className="panel-title"><h2>Project team</h2><span>{dashboard.members.length} members</span></div>{dashboard.members.map((member) => <div className="team-row" key={member.id}><span className="avatar-mini">{member.display_name.slice(0,1)}</span><div><strong><MemberName name={member.display_name}/></strong><small>{member.role === 'admin' ? 'Administrator' : 'Project member'}</small></div>{member.role === 'admin' && <span className="tiny-tag">ADMIN</span>}</div>)}</section>
             </div>
             <p className="dash-footnote">All analytics are estimates based on privacy-friendly browser identifiers. They do not verify unique people.</p>
           </>}
-          {profileTab === 'comments' && <section className="panel-card"><div className="panel-title"><div><h2>Community comments</h2><p>Anonymous comments expire after 72 hours. All eight members can delete them.</p></div><span>{dashboard.comments.length} active</span></div>{dashboard.comments.length ? dashboard.comments.map((comment) => <div className="moderation-row" key={comment.id}><div><p>{comment.content}</p><small>Published {formatTime(comment.created_at)}</small></div><button className="danger-icon" aria-label="Delete comment" onClick={() => void deleteComment(comment.id)}><Trash2 size={16}/></button></div>) : <EmptyState text="There are no active comments right now."/>}</section>}
-          {profileTab === 'video' && <div className="dashboard-columns"><section className="panel-card"><div className="panel-title"><h2>Active project video</h2><span>{dashboard.profile.role === 'admin' ? 'ADMIN CONTROL' : 'READ ONLY'}</span></div><form className="settings-form" onSubmit={saveSettings}><label>Vimeo video ID<input value={settingsDraft.active_vimeo_id} onChange={(e) => setSettingsDraft({ ...settingsDraft, active_vimeo_id: e.target.value.replace(/[^0-9]/g, '') })} placeholder="Example: 123456789" disabled={dashboard.profile.role !== 'admin'}/></label><label>Vimeo privacy hash (only for unlisted videos)<input value={settingsDraft.active_vimeo_hash} onChange={(e) => setSettingsDraft({ ...settingsDraft, active_vimeo_hash: e.target.value.replace(/[^a-zA-Z0-9]/g, '') })} placeholder="Leave blank for public videos" disabled={dashboard.profile.role !== 'admin'}/></label><label>MP4 download URL<input type="url" value={settingsDraft.active_mp4_url} onChange={(e) => setSettingsDraft({ ...settingsDraft, active_mp4_url: e.target.value })} placeholder="https://..." disabled={dashboard.profile.role !== 'admin'}/></label>{dashboard.profile.role === 'admin' ? <><button className="primary-button" type="submit">Save video details</button><p className="permission-note"><LockKeyhole size={14}/> After replacing the video, update <code>public/emergency-links.json</code> in GitHub with the same Vimeo ID and public MP4 URL, then redeploy. This keeps the video fallback available if Supabase is unavailable.</p></> : <p className="permission-note"><LockKeyhole size={14}/> Only Aman Alam can upload, replace, or publish the active video.</p>}</form></section><section className="panel-card"><div className="panel-title"><h2>Website announcements</h2><span>{dashboard.profile.role === 'admin' ? 'ADMIN CONTROL' : 'READ ONLY'}</span></div><form className="settings-form" onSubmit={saveSettings}><label>Announcement<textarea rows={3} value={settingsDraft.announcement} onChange={(e) => setSettingsDraft({ ...settingsDraft, announcement: e.target.value })} disabled={dashboard.profile.role !== 'admin'} placeholder="Internal project announcement"/></label><label>Exhibition information<textarea rows={3} value={settingsDraft.exhibition_info} onChange={(e) => setSettingsDraft({ ...settingsDraft, exhibition_info: e.target.value })} disabled={dashboard.profile.role !== 'admin'} placeholder="Internal exhibition notes"/></label>{dashboard.profile.role === 'admin' ? <button className="primary-button" type="submit">Save project updates</button> : <p className="permission-note"><LockKeyhole size={14}/> These management fields are administrator-controlled.</p>}</form></section></div>}
-          {profileTab === 'analytics' && <section className="panel-card"><div className="panel-title"><div><h2>Project analytics</h2><p>Stored until the administrator manually clears them.</p></div><select value={analyticsDays} onChange={(e) => setAnalyticsDays(Number(e.target.value))}><option value={7}>Last 7 days</option><option value={30}>Last 30 days</option><option value={90}>Last 90 days</option></select></div><div className="metric-grid compact"><Metric label="Visits" value={dashboard.analytics.visits} icon={<Eye/>}/><Metric label="Unique visitors*" value={dashboard.analytics.uniqueVisitors} icon={<Users/>}/><Metric label="Video plays" value={dashboard.analytics.plays} icon={<Play/>}/><Metric label="Unique viewers*" value={dashboard.analytics.uniqueViewers} icon={<Video/>}/><Metric label="Estimated active (5m)" value={dashboard.analytics.liveVisitorsEstimate} icon={<Activity/>}/><Metric label="Likes" value={dashboard.analytics.likes} icon={<Heart/>}/><Metric label="Comments" value={dashboard.analytics.comments} icon={<MessageCircle/>}/></div><AnalyticsChart data={dashboard.daily}/><div className="analytics-actions"><button className="secondary-button" onClick={() => void exportAnalytics()}><FileSpreadsheet size={16}/> Export CSV</button>{dashboard.profile.role === 'admin' && <button className="danger-button" onClick={() => void clearAnalytics()}><Trash2 size={15}/> Clear analytics history</button>}</div><p className="dash-footnote">*Unique visitor and viewer figures are estimates, not verified people. Browser storage changes or multiple devices may affect them.</p></section>}
-          {profileTab === 'members' && <section className="panel-card"><div className="panel-title"><div><h2>Project member accounts</h2><p>Eight individual accounts · one administrator · no password recovery</p></div><button className="secondary-button" onClick={downloadMemberDirectory}><FileSpreadsheet size={15}/> Export directory</button></div><div className="member-directory">{dashboard.members.map((member) => <div className="member-directory-card" key={member.id}><span className="avatar-mini">{member.member_code}</span><div className="member-directory-main"><strong><MemberName name={member.display_name}/></strong><small>Account status: Provisioned</small></div><span className={member.role === 'admin' ? 'tiny-tag' : 'member-tag'}>{member.role === 'admin' ? 'ADMIN' : 'MEMBER'}</span></div>)}</div><p className="permission-note"><LockKeyhole size={14}/> This directory never displays passwords. Passwords are entered locally during account setup. No password-reset feature is enabled. Aman remains the sole administrator.</p></section>}
+          {profileTab === 'comments' && <section className="panel-card" onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave}><div className="panel-title"><div><h2>Community comments</h2><p>Anonymous comments expire after 72 hours. All eight members can delete them.</p></div><span>{dashboard.comments.length} active</span></div>{dashboard.comments.length ? dashboard.comments.map((comment) => <div className="moderation-row" key={comment.id}><div><p>{comment.content}</p><small>Published {formatTime(comment.created_at)}</small></div><button className="danger-icon" aria-label="Delete comment" onClick={() => void deleteComment(comment.id)}><Trash2 size={16}/></button></div>) : <EmptyState text="There are no active comments right now."/>}</section>}
+          {profileTab === 'video' && <div className="dashboard-columns"><section className="panel-card" onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave}><div className="panel-title"><h2>Active project video</h2><span>{dashboard.profile.role === 'admin' ? 'ADMIN CONTROL' : 'READ ONLY'}</span></div><form className="settings-form" onSubmit={saveSettings}><label>Vimeo video ID<input value={settingsDraft.active_vimeo_id} onChange={(e) => setSettingsDraft({ ...settingsDraft, active_vimeo_id: e.target.value.replace(/[^0-9]/g, '') })} placeholder="Example: 123456789" disabled={dashboard.profile.role !== 'admin'}/></label><label>Vimeo privacy hash (only for unlisted videos)<input value={settingsDraft.active_vimeo_hash} onChange={(e) => setSettingsDraft({ ...settingsDraft, active_vimeo_hash: e.target.value.replace(/[^a-zA-Z0-9]/g, '') })} placeholder="Leave blank for public videos" disabled={dashboard.profile.role !== 'admin'}/></label><label>MP4 download URL<input type="url" value={settingsDraft.active_mp4_url} onChange={(e) => setSettingsDraft({ ...settingsDraft, active_mp4_url: e.target.value })} placeholder="https://..." disabled={dashboard.profile.role !== 'admin'}/></label>{dashboard.profile.role === 'admin' ? <><button className="primary-button" type="submit">Save video details</button><p className="permission-note"><LockKeyhole size={14}/> After replacing the video, update <code>public/emergency-links.json</code> in GitHub with the same Vimeo ID and public MP4 URL, then redeploy. This keeps the video fallback available if Supabase is unavailable.</p></> : <p className="permission-note"><LockKeyhole size={14}/> Only Aman Alam can upload, replace, or publish the active video.</p>}</form></section><section className="panel-card" onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave}><div className="panel-title"><h2>Website announcements</h2><span>{dashboard.profile.role === 'admin' ? 'ADMIN CONTROL' : 'READ ONLY'}</span></div><form className="settings-form" onSubmit={saveSettings}><label>Announcement<textarea rows={3} value={settingsDraft.announcement} onChange={(e) => setSettingsDraft({ ...settingsDraft, announcement: e.target.value })} disabled={dashboard.profile.role !== 'admin'} placeholder="Internal project announcement"/></label><label>Exhibition information<textarea rows={3} value={settingsDraft.exhibition_info} onChange={(e) => setSettingsDraft({ ...settingsDraft, exhibition_info: e.target.value })} disabled={dashboard.profile.role !== 'admin'} placeholder="Internal exhibition notes"/></label>{dashboard.profile.role === 'admin' ? <button className="primary-button" type="submit">Save project updates</button> : <p className="permission-note"><LockKeyhole size={14}/> These management fields are administrator-controlled.</p>}</form></section></div>}
+          {profileTab === 'analytics' && <section className="panel-card" onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave}><div className="panel-title"><div><h2>Project analytics</h2><p>Stored until the administrator manually clears them.</p></div><select value={analyticsDays} onChange={(e) => setAnalyticsDays(Number(e.target.value))}><option value={7}>Last 7 days</option><option value={30}>Last 30 days</option><option value={90}>Last 90 days</option></select></div><div className="metric-grid compact"><Metric label="Visits" value={dashboard.analytics.visits} icon={<Eye/>}/><Metric label="Unique visitors*" value={dashboard.analytics.uniqueVisitors} icon={<Users/>}/><Metric label="Video plays" value={dashboard.analytics.plays} icon={<Play/>}/><Metric label="Unique viewers*" value={dashboard.analytics.uniqueViewers} icon={<Video/>}/><Metric label="Estimated active (5m)" value={dashboard.analytics.liveVisitorsEstimate} icon={<Activity/>}/><Metric label="Likes" value={dashboard.analytics.likes} icon={<Heart/>}/><Metric label="Comments" value={dashboard.analytics.comments} icon={<MessageCircle/>}/></div><AnalyticsChart data={dashboard.daily}/><div className="analytics-actions"><button className="secondary-button" onClick={() => void exportAnalytics()}><FileSpreadsheet size={16}/> Export CSV</button>{dashboard.profile.role === 'admin' && <button className="danger-button" onClick={() => void clearAnalytics()}><Trash2 size={15}/> Clear analytics history</button>}</div><p className="dash-footnote">*Unique visitor and viewer figures are estimates, not verified people. Browser storage changes or multiple devices may affect them.</p></section>}
+          {profileTab === 'members' && <section className="panel-card" onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave}><div className="panel-title"><div><h2>Project member accounts</h2><p>Eight individual accounts · one administrator · no password recovery</p></div><button className="secondary-button" onClick={downloadMemberDirectory}><FileSpreadsheet size={15}/> Export directory</button></div><div className="member-directory">{dashboard.members.map((member) => <div className="member-directory-card" key={member.id}><span className="avatar-mini">{member.member_code}</span><div className="member-directory-main"><strong><MemberName name={member.display_name}/></strong><small>Account status: Provisioned</small></div><span className={member.role === 'admin' ? 'tiny-tag' : 'member-tag'}>{member.role === 'admin' ? 'ADMIN' : 'MEMBER'}</span></div>)}</div><p className="permission-note"><LockKeyhole size={14}/> This directory never displays passwords. Passwords are entered locally during account setup. No password-reset feature is enabled. Aman remains the sole administrator.</p></section>}
         </main>
         <footer className="dashboard-footer">PHYSICS DIGITAL HUB <span>·</span> DUAL AXIS SOLAR TRACKER <span>·</span> PRIVATE MEMBER AREA</footer>
         {toast && <div className="toast"><Check size={16}/>{toast}</div>}
@@ -543,6 +774,7 @@ function App() {
 
   return (
     <div className="app-shell">
+      <SolarParticleCanvas />
       <div className="ambient ambient-one"/><div className="ambient ambient-two"/>
       {screen === 'welcome' && <main className="intro-screen welcome-screen">
         <div className="top-meta"><span className="school-lockup"><img src="/assets/sks-school-crest.webp" alt=""/><School size={14}/> S.K.S PUBLIC SCHOOL</span><span>ANNUAL EXHIBITION · PHYSICS</span></div>
@@ -554,8 +786,9 @@ function App() {
       </main>}
 
       {screen === 'members' && <main className="intro-screen members-screen">
-        <div className="members-header"><p className="eyebrow">THE TEAM BEHIND THE MODEL</p><h1>BUILT BY <span>EIGHT.</span><br/>DRIVEN BY ONE VISION.</h1><p>Meet the project team of S.K.S Public School.</p></div>
-        <div className="credits-list">{MEMBERS.map((member, index) => <div className="credit-line" key={member.code} style={{ animationDelay: `${index * 300}ms` }}><span className="credit-number">{member.code}</span><span className="credit-name"><MemberName name={member.name}/></span><span className="credit-mark"/></div>)}</div>
+        <div className="members-header"><p className="eyebrow">THE TEAM BEHIND THE MODEL · SIGNAL 02</p><h1><ScrambleText text="BUILT BY" delay={90} duration={720}/><br/><span><ScrambleText text="EIGHT." delay={280} duration={860}/></span><br/><ScrambleText text="DRIVEN BY ONE VISION." delay={520} duration={980}/></h1><p>Meet the project team of S.K.S Public School.</p></div>
+        <div className="credits-list">{MEMBERS.map((member, index) => <div className="credit-line" key={member.code} onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave} style={{ animationDelay: `${index * 300}ms` }}><span className="credit-number">{member.code}</span><span className="credit-name"><MemberName name={member.name} scramble delay={260 + index * 210} /></span><span className="credit-mark"/></div>)}</div>
+        <div className="team-solar-marquee" aria-hidden="true"><div className="team-solar-marquee-track"><span>DUAL AXIS TRACKING</span><i>✦</i><span>SOLAR ENERGY</span><i>✦</i><span>PHYSICS IN ACTION</span><i>✦</i><span>RENEWABLE TECHNOLOGY</span><i>✦</i><span>DUAL AXIS TRACKING</span><i>✦</i><span>SOLAR ENERGY</span><i>✦</i><span>PHYSICS IN ACTION</span><i>✦</i><span>RENEWABLE TECHNOLOGY</span><i>✦</i></div></div>
         <div className="team-tagline"><span/> EIGHT MEMBERS. ONE VISION.</div>
         <button className="intro-continue members-continue" type="button" onClick={() => setScreen('video')}>WATCH PROJECT EXPLANATION <ArrowRight size={15}/></button>
         <div className="intro-bottom"><span>PROJECT CREDITS</span><span className="intro-progress"><i className="progress-two"/></span><span>02 / 03</span></div>
@@ -563,6 +796,7 @@ function App() {
 
       {screen === 'video' && <main className="video-experience">
         <header className="public-header"><div className="public-brand"><img src="/assets/sks-school-crest.webp" alt="S.K.S Public School logo"/><div><strong>PHYSICS DIGITAL HUB</strong><span>S.K.S PUBLIC SCHOOL · ANNUAL EXHIBITION</span></div></div><div className="public-header-right"><span className="project-chip"><span/> PROJECT LIVE</span><button className="icon-button member-entry" onClick={openMemberPortal} aria-label="Open member access" title="Member access"><UserRound size={19}/></button></div></header>
+        <div className="video-heading"><div><p className="eyebrow">THE PROJECT FILM · PRESENTATION 03</p><h1>FOLLOW THE SUN.<br/><span>ACROSS TWO AXES.</span></h1></div><div className="video-heading-mark"><i/> DUAL AXIS SOLAR TRACKER <i/></div></div>
         <section className={`video-grid ${commentPanelOpen ? 'comments-open' : ''}`}>
           <div className="video-column"><div className="player-shell"><div className="player-topline"><span><i/> MAIN PROJECT FILM</span><span>PHYSICS DIGITAL HUB / 001</span></div>{vimeoEmbedUrl ? <><iframe ref={iframeRef} src={vimeoEmbedUrl} title="Dual Axis Solar Tracker project video" loading="eager" allow="fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" onError={() => setVideoError(true)}/>{videoError && <div className="video-error-overlay"><p>Embedded playback is unavailable right now.</p><div>{vimeoId && <a href={`https://vimeo.com/${encodeURIComponent(vimeoId)}${vimeoHash ? `/${encodeURIComponent(vimeoHash)}` : ''}`} target="_blank" rel="noreferrer">OPEN VIDEO ON VIMEO <ExternalLink size={13}/></a>}{downloadUrl && <a href={downloadUrl} target="_blank" rel="noreferrer">DOWNLOAD MP4 <Download size={13}/></a>}<a href="/emergency.html">OPEN EMERGENCY VIDEO PAGE <ExternalLink size={13}/></a></div></div>}</> : <div className="video-placeholder"><div className="placeholder-rings"><div><Play size={28}/></div></div><p className="eyebrow">PROJECT VIDEO</p><h2>THE EXPLAINER FILM<br/><span>WILL APPEAR HERE</span></h2><p>The video player activates when the Vimeo video ID is configured.</p><span className="placeholder-code">VIDEO MODULE · READY FOR CONTENT</span></div>}</div>
             <div className="video-actions"><button className={liked ? 'like-button is-liked' : 'like-button'} onClick={() => void toggleLike()} disabled={busy}><Heart size={18} fill={liked ? 'currentColor' : 'none'}/><span>{liked ? 'LIKED' : 'LIKE'}</span><b>{likeCount.toLocaleString('en-IN')}</b></button><button className="comment-open" onClick={() => setCommentPanelOpen(!commentPanelOpen)} aria-expanded={commentPanelOpen} aria-controls="public-comments-panel"><MessageCircle size={18}/><span>COMMENTS</span><b>{comments.length}</b></button>{downloadUrl ? <a className="download-button" href={downloadUrl} target="_blank" rel="noreferrer"><Download size={17}/> DOWNLOAD MP4 <ExternalLink size={12}/></a> : <span className="download-pending"><ArrowDownToLine size={16}/> DOWNLOAD AVAILABLE SOON</span>}</div>
@@ -573,10 +807,10 @@ function App() {
       </main>}
 
       {memberPortalOpen && <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) setMemberPortalOpen(false); }}><section className="access-modal"><button className="modal-close icon-button" onClick={() => setMemberPortalOpen(false)} aria-label="Close access panel"><X size={18}/></button><div className="modal-logo"><img src="/assets/sks-school-crest.webp" alt="S.K.S School crest"/></div><p className="eyebrow">PHYSICS DIGITAL HUB</p><h2>{memberStage === 'access' ? 'Choose your access' : memberStage === 'shared' ? 'Project member access' : memberStage === 'choose' ? 'Select your profile' : 'Member verification'}</h2><p className="modal-subtitle">{memberStage === 'access' ? 'Continue as a visitor or enter the private project area.' : memberStage === 'shared' ? 'Enter the shared website password to continue.' : memberStage === 'choose' ? 'Select your own name to continue.' : <>Enter the individual password for {selectedMember && <MemberName name={selectedMember.name}/>}.</>}</p>
-            {memberStage === 'access' && <div className="access-choices"><button className="access-choice" onClick={() => { setMemberPortalOpen(false); setView('public'); setScreen('welcome'); }}><span className="choice-icon"><Eye size={20}/></span><span><strong>Viewer</strong><small>Open the public project experience</small></span><ArrowRight size={17}/></button><button className="access-choice" onClick={() => setMemberStage('shared')}><span className="choice-icon"><LockKeyhole size={20}/></span><span><strong>Project Member</strong><small>Access your private member profile</small></span><ArrowRight size={17}/></button></div>}
-            {memberStage === 'shared' && <form className="modal-form" onSubmit={verifySharedPassword}><label>Shared website password<input autoComplete="current-password" type="password" value={sharedPassword} onChange={(e) => setSharedPassword(e.target.value)} placeholder="Enter shared password" required/></label><button className="primary-button full-button" type="submit" disabled={busy || isDemoMode}>{busy ? 'VERIFYING…' : 'VERIFY & CONTINUE'} <ArrowRight size={15}/></button>{isDemoMode && <small className="setup-note"><LockKeyhole size={13}/> Member login activates after Supabase setup.</small>}<button className="text-back" type="button" onClick={() => setMemberStage('access')}><ArrowLeft size={14}/> Back to access choices</button></form>}
-            {memberStage === 'choose' && <div className="member-picker"><div className="member-card-grid">{MEMBERS.map((member) => <button className="member-card" key={member.code} onClick={() => { setSelectedMember(member); setMemberStage('individual'); }}><span>{member.code}</span><strong><MemberName name={member.name}/></strong><small>{member.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</small></button>)}</div><button className="text-back" onClick={() => setMemberStage('shared')}><ArrowLeft size={14}/> Back</button></div>}
-            {memberStage === 'individual' && <form className="modal-form" onSubmit={signInMember}><div className="selected-member"><span>{selectedMember?.code}</span><strong>{selectedMember && <MemberName name={selectedMember.name}/>}</strong><small>{selectedMember?.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</small></div><label>Individual password<input type="password" autoComplete="current-password" value={individualPassword} onChange={(e) => setIndividualPassword(e.target.value)} placeholder="Enter your individual password" required/></label><button className="primary-button full-button" type="submit" disabled={busy}>{busy ? 'SIGNING IN…' : 'OPEN PERSONAL PROFILE'} <ArrowRight size={15}/></button><button className="text-back" type="button" onClick={() => setMemberStage('choose')}><ArrowLeft size={14}/> Choose another member</button></form>}
+            {memberStage === 'access' && <div className="access-choices"><button className="access-choice" onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave} onClick={() => { setMemberPortalOpen(false); setView('public'); setScreen('welcome'); }}><span className="choice-icon"><Eye size={20}/></span><span><strong>Viewer</strong><small>Open the public project experience</small></span><ArrowRight size={17}/></button><button className="access-choice" onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave} onClick={() => { setAuthError(''); setMemberStage('shared'); }}><span className="choice-icon"><LockKeyhole size={20}/></span><span><strong>Project Member</strong><small>Access your private member profile</small></span><ArrowRight size={17}/></button></div>}
+            {memberStage === 'shared' && <form className="modal-form" onSubmit={verifySharedPassword}><label>Shared website password<input autoComplete="current-password" type="password" value={sharedPassword} onChange={(e) => { setSharedPassword(e.target.value); setAuthError(''); }} placeholder="Enter shared password" required/></label>{authError && <p className="auth-feedback" role="alert"><ShieldCheck size={15}/>{authError}</p>}<button className="primary-button full-button" type="submit" disabled={busy || isDemoMode}>{busy ? 'VERIFYING…' : 'VERIFY & CONTINUE'} <ArrowRight size={15}/></button>{isDemoMode && <small className="setup-note"><LockKeyhole size={13}/> Member login activates after Supabase setup.</small>}<button className="text-back" type="button" onClick={() => { setAuthError(''); setMemberStage('access'); }}><ArrowLeft size={14}/> Back to access choices</button></form>}
+            {memberStage === 'choose' && <div className="member-picker"><div className="member-card-grid">{MEMBERS.map((member) => <button className="member-card" key={member.code} onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave} onClick={() => { setAuthError(''); setSelectedMember(member); setMemberStage('individual'); }}><span>{member.code}</span><strong><MemberName name={member.name}/></strong><small>{member.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</small></button>)}</div><button className="text-back" onClick={() => setMemberStage('shared')}><ArrowLeft size={14}/> Back</button></div>}
+            {memberStage === 'individual' && <form className="modal-form" onSubmit={signInMember}><div className="selected-member"><span>{selectedMember?.code}</span><strong>{selectedMember && <MemberName name={selectedMember.name}/>}</strong><small>{selectedMember?.role === 'admin' ? 'ADMINISTRATOR' : 'PROJECT MEMBER'}</small></div><label>Individual password<input type="password" autoComplete="current-password" value={individualPassword} onChange={(e) => { setIndividualPassword(e.target.value); setAuthError(''); }} placeholder="Enter your individual password" required/></label>{authError && <p className="auth-feedback" role="alert"><ShieldCheck size={15}/>{authError}</p>}<button className="primary-button full-button" type="submit" disabled={busy}>{busy ? 'SIGNING IN…' : 'OPEN PERSONAL PROFILE'} <ArrowRight size={15}/></button><button className="text-back" type="button" onClick={() => { setAuthError(''); setMemberStage('choose'); }}><ArrowLeft size={14}/> Choose another member</button></form>}
             <div className="modal-security"><ShieldCheck size={14}/> Secure member access · Individual accounts</div>
           </section></div>}
       {toast && view === 'public' && <div className="toast"><Check size={16}/>{toast}</div>}
@@ -585,7 +819,7 @@ function App() {
 }
 
 function Metric({ label, value, icon }: { label: string; value: number; icon: ReactNode }) {
-  return <div className="metric-card"><span className="metric-icon">{icon}</span><div><small>{label}</small><strong>{value.toLocaleString('en-IN')}</strong></div></div>;
+  return <div className="metric-card" onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave}><span className="metric-icon">{icon}</span><div><small>{label}</small><strong>{value.toLocaleString('en-IN')}</strong></div></div>;
 }
 
 function AnalyticsChart({ data }: { data: { date: string; visits: number; plays: number }[] }) {

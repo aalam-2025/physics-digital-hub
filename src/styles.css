@@ -99,3 +99,375 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .members-continue{display:flex;width:max-content;margin:24px auto 0}
 @media(max-width:760px){.intro-continue{min-height:44px;padding:12px 15px;font-size:9px}.members-continue{margin-top:22px}}
 @media(prefers-reduced-motion:reduce){.intro-continue{transition:none}.intro-continue:hover{transform:none}}
+
+/* ========================================================================
+   PHASE 3B — Premium Solar Technology visual system
+   ======================================================================== */
+:root{
+  --solar-amber:#ffc66a;
+  --solar-gold:#f3a943;
+  --solar-pale:#fff0c7;
+  --solar-blue:#6ddcff;
+  --solar-ink:#06101c;
+  --solar-glass:rgba(11,29,46,.76);
+}
+
+.solar-particle-canvas{
+  position:fixed;
+  inset:0;
+  z-index:120;
+  width:100vw;
+  height:100vh;
+  pointer-events:none;
+  contain:strict;
+}
+
+.app-shell{
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse at 78% 14%,rgba(255,176,73,.075),transparent 27%),
+    radial-gradient(ellipse at 12% 84%,rgba(38,155,224,.09),transparent 32%),
+    linear-gradient(135deg,rgba(11,33,57,.78),rgba(4,12,24,.96) 55%,rgba(7,22,39,.94));
+}
+.app-shell:after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  opacity:.28;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,190,98,.12),transparent 43%);
+}
+.intro-screen,.video-experience{z-index:1}
+.ambient-one{background:#d28b35;opacity:.075}
+.ambient-two{background:#087fbd;opacity:.13}
+
+/* Cinematic display type and solar-spectrum sheen. */
+.welcome-copy h1 span,.members-header h1 span,.video-heading h1 span{
+  background:linear-gradient(105deg,#fff5dc 0%,#ffd17b 24%,#f5ad49 42%,#83eaff 68%,#c2f6ff 86%,#ffd17b 100%);
+  background-size:240% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  animation:solarTitleSheen 8s ease-in-out infinite;
+}
+@keyframes solarTitleSheen{0%,18%{background-position:0% 50%}65%,100%{background-position:100% 50%}}
+.welcome-copy h1{filter:drop-shadow(0 8px 30px rgba(255,182,83,.07))}
+.welcome-copy .pretitle{color:#ffd48c}
+.welcome-rule span{background:linear-gradient(90deg,var(--solar-amber),rgba(255,198,106,0))}
+.live-label{border-color:rgba(255,194,105,.28);background:linear-gradient(100deg,rgba(240,166,65,.12),rgba(41,168,228,.045));color:#f9d79d}
+.live-label span{background:var(--solar-amber);box-shadow:0 0 14px var(--solar-amber)}
+.art-orbit{border-color:rgba(255,197,107,.22)}
+.orbit-b{border-color:rgba(89,214,247,.21)}
+.crest-frame{filter:drop-shadow(0 0 50px rgba(255,177,75,.13)) drop-shadow(0 0 26px rgba(27,156,255,.15))}
+.welcome-art:after{background:linear-gradient(180deg,transparent 0%,rgba(255,195,104,.11) 49%,transparent 52%)}
+
+/* Premium Team Showcase cards — eight members, no avatar dependency. */
+.members-screen{padding-top:38px;padding-bottom:88px}
+.members-header{margin:1.2vh 0 24px}
+.members-header .eyebrow{color:#f0bf72}
+.members-header h1{font-size:clamp(36px,4.75vw,67px);line-height:1.02;text-wrap:balance}
+.members-header>p:last-child{color:#a5bdd0;letter-spacing:.02em}
+.credits-list{
+  width:min(1120px,96%);
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:11px;
+  perspective:1100px;
+}
+.credit-line{
+  position:relative;
+  min-width:0;
+  min-height:82px;
+  grid-template-columns:36px minmax(0,1fr) 7px;
+  gap:10px;
+  padding:13px 12px;
+  border:1px solid rgba(119,192,224,.19);
+  border-radius:12px;
+  border-bottom:1px solid rgba(119,192,224,.19);
+  background:linear-gradient(145deg,rgba(19,46,67,.78),rgba(7,22,37,.89));
+  box-shadow:inset 0 1px rgba(255,255,255,.035),0 12px 27px rgba(0,0,0,.14);
+  backdrop-filter:blur(12px);
+  transform-style:preserve-3d;
+  transition:border-color .28s ease,box-shadow .28s ease,background .28s ease;
+}
+.credit-line:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  opacity:0;
+  background:linear-gradient(112deg,transparent 28%,rgba(255,219,151,.16) 48%,rgba(100,219,255,.11) 55%,transparent 72%);
+  transform:translateX(-35%);
+}
+.credit-line:hover{
+  border-color:rgba(255,197,110,.55);
+  background:linear-gradient(145deg,rgba(35,59,76,.92),rgba(9,26,42,.96));
+  box-shadow:inset 0 1px rgba(255,255,255,.06),0 18px 38px rgba(0,0,0,.25),0 0 24px rgba(255,179,76,.09);
+  transform:translateY(-4px) rotateX(2deg);
+}
+.credit-line:hover:before{opacity:1;animation:teamCardSheen .8s ease both}
+@keyframes teamCardSheen{to{transform:translateX(35%);opacity:0}}
+.credit-number{
+  width:34px;height:34px;display:grid;place-items:center;
+  border:1px solid rgba(255,193,105,.3);border-radius:9px;
+  background:rgba(238,163,66,.075);color:#ffd38b;
+  font:11px var(--mono);box-shadow:inset 0 0 14px rgba(255,184,87,.045);
+}
+.credit-name{min-width:0;color:#f1f6fb;font-size:clamp(14px,1.25vw,18px);line-height:1.25;overflow-wrap:anywhere}
+.credit-name .member-name-wrap{gap:5px}
+.credit-mark{width:7px;height:7px;background:#ffd27a;box-shadow:0 0 13px rgba(255,202,118,.85)}
+.credit-line:nth-child(2){border-color:rgba(255,196,103,.42);background:linear-gradient(145deg,rgba(67,48,29,.48),rgba(12,27,40,.93))}
+.credit-line:nth-child(2) .credit-number{color:#ffe3aa;border-color:rgba(255,207,133,.58);background:rgba(232,169,77,.13)}
+.credit-line:nth-child(2) .credit-mark{background:#ffe3a8;box-shadow:0 0 15px #ffc66a}
+.team-tagline{margin:18px 0 0;color:#c7d8e4}
+.team-tagline>span{background:linear-gradient(90deg,var(--solar-amber),var(--solar-blue))}
+.team-solar-marquee{
+  width:min(1120px,96%);
+  overflow:hidden;
+  margin:19px auto 0;
+  padding:9px 0;
+  border-top:1px solid rgba(255,192,103,.13);
+  border-bottom:1px solid rgba(98,205,235,.12);
+  background:linear-gradient(90deg,transparent,rgba(13,35,52,.4),transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+}
+.team-solar-marquee-track{
+  width:max-content;
+  display:flex;
+  align-items:center;
+  gap:22px;
+  color:#86a9c0;
+  font:8px var(--mono);
+  letter-spacing:.17em;
+  animation:solarMarquee 34s linear infinite;
+}
+.team-solar-marquee-track i{font-style:normal;color:#f5c16e;font-size:10px}
+@keyframes solarMarquee{to{transform:translateX(-50%)}}
+.scramble-text{display:inline-block;min-width:0;color:inherit;text-shadow:0 0 17px rgba(255,198,106,.08)}
+.members-header h1 .scramble-text{white-space:normal}
+.credit-name .scramble-text{overflow-wrap:anywhere}
+
+/* Public project-film presentation. */
+.public-header{border-bottom-color:rgba(255,190,103,.16)}
+.public-brand img{border-color:rgba(255,197,109,.37);box-shadow:0 0 22px rgba(255,171,73,.1),0 0 22px rgba(0,161,255,.1)}
+.public-brand strong{letter-spacing:.14em}
+.project-chip{border-color:rgba(255,194,105,.25);background:rgba(219,149,56,.06);color:#f4d29a}
+.project-chip span{background:#ffc66a;box-shadow:0 0 12px #ffc66a}
+.player-shell{
+  border-color:rgba(255,195,106,.27);
+  border-radius:15px;
+  box-shadow:0 24px 75px rgba(0,0,0,.4),0 0 50px rgba(229,161,67,.065),0 0 0 1px rgba(91,203,239,.07);
+}
+.player-shell:after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  border:1px solid rgba(255,255,255,.025);border-radius:inherit;
+  background:linear-gradient(128deg,rgba(255,221,160,.035),transparent 24%,transparent 75%,rgba(89,207,242,.035));
+}
+.video-actions{border-bottom-color:rgba(255,190,103,.13)}
+.video-actions button,.download-button{border-color:rgba(255,195,106,.18);background:linear-gradient(145deg,rgba(28,46,60,.86),rgba(10,27,43,.92))}
+.video-actions button:hover,.download-button:hover{border-color:rgba(255,205,129,.56);box-shadow:0 9px 28px rgba(255,180,81,.08)}
+.download-button{color:#ffd58d}
+
+/* Access modal, cards, buttons, and form feedback. */
+.modal-backdrop{backdrop-filter:blur(12px);background:rgba(1,7,14,.77)}
+.access-modal{
+  border-color:rgba(255,196,110,.32);
+  background:radial-gradient(circle at 50% 0,rgba(230,158,65,.17),transparent 38%),linear-gradient(145deg,#10283b,#061321 68%);
+  box-shadow:0 30px 110px rgba(0,0,0,.68),0 0 50px rgba(255,174,72,.075);
+}
+.modal-logo{border-color:rgba(255,197,110,.48);box-shadow:0 0 24px rgba(255,180,84,.12)}
+.access-modal>.eyebrow{color:#f3c477}
+.access-modal h2{letter-spacing:-.025em}
+.access-choice{
+  position:relative;overflow:hidden;
+  border-color:rgba(255,194,105,.19);
+  background:linear-gradient(110deg,rgba(37,58,73,.83),rgba(8,29,47,.84));
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+.access-choice:hover{transform:translateY(-3px);border-color:rgba(255,201,117,.55);box-shadow:0 13px 30px rgba(0,0,0,.22),0 0 22px rgba(255,181,75,.075)}
+.choice-icon{color:#ffd18a;border-color:rgba(255,194,106,.2);background:rgba(221,154,67,.09)}
+.member-card-grid{gap:10px}
+.member-card{
+  position:relative;overflow:hidden;
+  border-color:rgba(255,194,105,.21);
+  background:linear-gradient(145deg,rgba(39,58,70,.88),rgba(7,25,42,.94));
+  box-shadow:inset 0 1px rgba(255,255,255,.035),0 9px 24px rgba(0,0,0,.12);
+}
+.member-card:after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at var(--card-x,50%) var(--card-y,50%),rgba(255,198,106,.16),transparent 62%);
+  transition:opacity .2s ease;
+}
+.member-card:hover:after{opacity:1}
+.member-card:hover{border-color:rgba(255,207,132,.62);box-shadow:0 15px 34px rgba(0,0,0,.28),0 0 24px rgba(255,176,76,.09)}
+.member-card span,.selected-member span{color:#ffd28a}
+.selected-member{border-color:rgba(255,197,106,.24);background:linear-gradient(120deg,rgba(93,66,35,.18),rgba(18,54,77,.34))}
+.primary-button{background:linear-gradient(105deg,#f0ac4f,#ffdc94 55%,#86e7f5);box-shadow:0 8px 23px rgba(236,166,73,.13)}
+.primary-button:hover{box-shadow:0 11px 28px rgba(236,166,73,.22)}
+.secondary-button{background:rgba(32,57,75,.65);border-color:rgba(255,196,106,.19);color:#e1edf4}
+.secondary-button:hover{border-color:rgba(255,201,113,.55);color:#fff}
+.auth-feedback{
+  display:flex;align-items:flex-start;gap:9px;
+  margin:0;padding:11px 12px;
+  border:1px solid rgba(255,139,128,.3);border-radius:9px;
+  background:linear-gradient(110deg,rgba(127,48,46,.18),rgba(41,25,32,.22));
+  color:#ffd0c7;font-size:11px;line-height:1.55;
+  animation:authFeedbackIn .24s ease both;
+}
+.auth-feedback svg{flex:0 0 auto;color:#ffb6a7;margin-top:1px}
+@keyframes authFeedbackIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.modal-form label{color:#c4d7e4}
+.modal-form input{border-color:rgba(255,195,106,.19);background:rgba(3,16,28,.82)}
+.modal-form input:focus{border-color:rgba(255,203,125,.68);box-shadow:0 0 0 3px rgba(242,173,77,.09)}
+
+/* Premium dashboard surfaces — same working controls, refreshed presentation. */
+.dashboard-shell{
+  position:relative;isolation:isolate;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 84% 0,rgba(232,163,70,.12),transparent 32%),
+    radial-gradient(ellipse at 7% 72%,rgba(36,154,212,.09),transparent 35%),
+    #071321;
+}
+.dash-topbar{position:relative;z-index:2;background:linear-gradient(90deg,rgba(5,16,28,.96),rgba(14,31,43,.88),rgba(5,16,28,.96));border-bottom-color:rgba(255,194,105,.18);backdrop-filter:blur(16px)}
+.dash-brand img{border:1px solid rgba(255,195,106,.3);box-shadow:0 0 18px rgba(255,176,76,.08)}
+.dash-brand strong{letter-spacing:.15em}
+.role-pill{color:#f4d39d;border-color:rgba(255,195,106,.25);background:rgba(219,153,67,.075)}
+.dashboard-main{position:relative;z-index:1;max-width:1240px}
+.dash-welcome-title{font-size:clamp(27px,3.3vw,42px);letter-spacing:-.04em}
+.dash-heading>div>p:last-child{color:#9ab3c5}
+.dash-tabs{background:linear-gradient(120deg,rgba(12,31,46,.94),rgba(17,37,51,.85));border-color:rgba(255,194,105,.16);box-shadow:inset 0 1px rgba(255,255,255,.025),0 12px 30px rgba(0,0,0,.12)}
+.dash-tab{transition:color .2s ease,background .2s ease,border-color .2s ease,transform .2s ease}
+.dash-tab:hover{color:#fbe1b3;transform:translateY(-1px)}
+.dash-tab.active{background:linear-gradient(110deg,rgba(214,147,60,.18),rgba(43,137,166,.15));border-color:rgba(255,199,117,.25);color:#ffe3b0;box-shadow:inset 0 0 18px rgba(255,197,106,.035)}
+.metric-card,.panel-card,.analytics-chart{
+  position:relative;overflow:hidden;
+  border-color:rgba(255,193,105,.17);
+  background:linear-gradient(145deg,rgba(20,45,62,.9),rgba(7,24,39,.96));
+  box-shadow:inset 0 1px rgba(255,255,255,.035),0 14px 35px rgba(0,0,0,.16);
+}
+.metric-card{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.metric-card:hover{transform:translateY(-4px);border-color:rgba(255,200,116,.48);box-shadow:0 19px 36px rgba(0,0,0,.22),0 0 22px rgba(255,175,74,.07)}
+.metric-icon{color:#ffd28c;background:linear-gradient(140deg,rgba(235,166,77,.16),rgba(51,148,183,.12));border:1px solid rgba(255,194,105,.13)}
+.metric-card strong{color:#fff3db}
+.panel-card{transition:border-color .25s ease,box-shadow .25s ease}
+.panel-card:hover{border-color:rgba(255,195,109,.27);box-shadow:inset 0 1px rgba(255,255,255,.04),0 18px 42px rgba(0,0,0,.22)}
+.panel-title h2{letter-spacing:-.02em}
+.activity-dot{background:#ffd079;box-shadow:0 0 11px rgba(255,208,121,.55)}
+.avatar-mini{border-color:rgba(255,194,105,.23);background:rgba(206,143,64,.09);color:#ffdb9e}
+.tiny-tag{color:#ffda9a;border-color:rgba(255,194,105,.27)}
+.analytics-chart{background:linear-gradient(145deg,rgba(10,31,47,.92),rgba(6,21,35,.96))}
+.chart-visit-bar{background:linear-gradient(180deg,#ffe0a0,#d38b34);box-shadow:0 0 8px rgba(242,176,84,.16)}
+.chart-play-bar{background:linear-gradient(180deg,#8eefff,#267cae)}
+.dashboard-footer{position:relative;z-index:1;border-top-color:rgba(255,193,105,.14)}
+
+/* Consistent hover light for clickable cards, using pointer coordinates only. */
+.access-choice,.member-card,.credit-line,.metric-card,.panel-card{
+  -webkit-tap-highlight-color:transparent;
+}
+.access-choice:focus-visible,.member-card:focus-visible,.dash-tab:focus-visible,.intro-continue:focus-visible{
+  outline:2px solid #ffd18a;outline-offset:3px;
+}
+
+/* Screen-reader text stays complete while the visual glyphs resolve. */
+.scramble-text{font-variant-ligatures:none;letter-spacing:inherit}
+.scramble-text[role="text"]{unicode-bidi:plaintext}
+
+@media(max-width:1100px){
+  .credits-list{grid-template-columns:repeat(2,minmax(0,1fr));width:min(860px,96%)}
+  .credit-name{font-size:clamp(15px,2vw,19px)}
+}
+@media(max-width:760px){
+  .members-screen{padding-top:32px;padding-bottom:88px}
+  .members-header{margin-bottom:19px}
+  .members-header h1{font-size:clamp(33px,7.8vw,53px)}
+  .credits-list{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .credit-line{min-height:78px;padding:10px 8px;grid-template-columns:29px minmax(0,1fr) 6px;gap:7px}
+  .credit-number{width:28px;height:28px;font-size:9px}
+  .credit-name{font-size:clamp(12px,3.2vw,16px)}
+  .credit-line .project-leader-badge{font-size:6px;padding:3px 4px;letter-spacing:.04em}
+  .team-solar-marquee{margin-top:15px}
+  .team-solar-marquee-track{font-size:7px;gap:14px}
+  .team-tagline{margin-top:14px}
+  .dashboard-shell .dash-topbar{position:relative}
+  .dash-welcome-title{font-size:28px}
+  .metric-card:hover,.panel-card:hover{transform:none}
+}
+@media(max-width:390px){
+  .credit-line{min-height:74px;padding:9px 6px;gap:5px}
+  .credit-name{font-size:11px}
+  .credit-line .project-leader-badge{font-size:5.5px;gap:2px}
+  .members-header h1{font-size:32px}
+  .auth-feedback{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .solar-particle-canvas{display:none}
+  .welcome-copy h1 span,.members-header h1 span,.video-heading h1 span,.team-solar-marquee-track{animation:none!important}
+  .credit-line,.metric-card,.panel-card,.dash-tab,.access-choice,.member-card{transition:none!important}
+  .credit-line:hover,.metric-card:hover,.dash-tab:hover,.access-choice:hover,.member-card:hover{transform:none!important}
+}
+
+/* Pointer-tracked solar spotlights and gentle perspective on large cards. */
+.credit-line:after,.metric-card:after,.panel-card:after,.access-choice:after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  opacity:0;
+  background:radial-gradient(260px circle at var(--card-x,50%) var(--card-y,50%),rgba(255,205,126,.15),rgba(88,212,246,.045) 38%,transparent 72%);
+  transition:opacity .22s ease;
+}
+.credit-line:hover:after,.metric-card:hover:after,.panel-card:hover:after,.access-choice:hover:after{opacity:1}
+.credit-line>*,.metric-card>*,.panel-card>*,.access-choice>*{position:relative;z-index:1}
+@media(hover:none),(pointer:coarse){
+  .credit-line:hover,.metric-card:hover,.member-card:hover,.access-choice:hover{transform:none}
+  .credit-line:after,.metric-card:after,.panel-card:after,.access-choice:after{display:none}
+}
+
+/* Rotating solar-spectrum borders: animated only while a card is engaged. */
+@property --solar-border-angle{
+  syntax:"<angle>";
+  inherits:false;
+  initial-value:0deg;
+}
+@keyframes solarBorderSweep{to{--solar-border-angle:360deg}}
+.credit-line:hover,.member-card:hover,.metric-card:hover,.panel-card:hover,.access-choice:hover{
+  border-color:transparent;
+  background-image:
+    linear-gradient(145deg,rgba(25,49,65,.96),rgba(7,23,39,.98)),
+    conic-gradient(from var(--solar-border-angle),rgba(255,206,126,.08),rgba(255,206,126,.8),rgba(103,223,255,.74),rgba(255,206,126,.08));
+  background-origin:border-box;
+  background-clip:padding-box,border-box;
+  animation:solarBorderSweep 3.2s linear infinite;
+}
+.member-card:hover{background-image:linear-gradient(145deg,rgba(39,58,70,.96),rgba(7,25,42,.98)),conic-gradient(from var(--solar-border-angle),rgba(255,206,126,.08),rgba(255,206,126,.8),rgba(103,223,255,.74),rgba(255,206,126,.08))}
+.access-choice:hover{background-image:linear-gradient(110deg,rgba(37,58,73,.95),rgba(8,29,47,.96)),conic-gradient(from var(--solar-border-angle),rgba(255,206,126,.08),rgba(255,206,126,.72),rgba(103,223,255,.65),rgba(255,206,126,.08))}
+@keyframes dashboardContentReveal{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.metric-grid .metric-card{animation:dashboardContentReveal .5s cubic-bezier(.2,.75,.25,1) both}
+.metric-grid .metric-card:nth-child(2){animation-delay:.06s}
+.metric-grid .metric-card:nth-child(3){animation-delay:.12s}
+.metric-grid .metric-card:nth-child(4){animation-delay:.18s}
+.dashboard-columns .panel-card{animation:dashboardContentReveal .48s .1s cubic-bezier(.2,.75,.25,1) both}
+.player-shell:before{
+  content:"";position:absolute;z-index:2;top:0;left:-40%;width:32%;height:1px;
+  pointer-events:none;opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(255,213,142,.88),rgba(110,224,255,.72),transparent);
+  box-shadow:0 0 14px rgba(255,193,102,.34);
+  animation:filmScan 9s 1.4s ease-in-out infinite;
+}
+@keyframes filmScan{0%,8%{transform:translateX(0);opacity:0}16%{opacity:.8}58%{transform:translateX(460%);opacity:.48}70%,100%{transform:translateX(460%);opacity:0}}
+@media(prefers-reduced-motion:reduce){
+  .credit-line:hover,.member-card:hover,.metric-card:hover,.panel-card:hover,.access-choice:hover{animation:none!important}
+  .metric-grid .metric-card,.dashboard-columns .panel-card{animation:none!important}
+  .player-shell:before{display:none}
+}
+
+.video-heading{padding:28px 0 19px;position:relative}
+.video-heading .eyebrow{color:#efbd70}
+.video-heading h1{font-size:clamp(31px,4.1vw,55px);line-height:1.02;text-shadow:0 8px 35px rgba(255,177,73,.06)}
+.video-heading-mark{color:#a1b8c8;gap:9px}
+.video-heading-mark i{width:34px;background:linear-gradient(90deg,var(--solar-amber),var(--solar-blue))}
+@media(max-width:760px){.video-heading{padding:22px 0 15px}.video-heading h1{font-size:clamp(27px,6.6vw,39px)}}

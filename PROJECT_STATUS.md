@@ -1,63 +1,87 @@
-# PHYSICS DIGITAL HUB — Phase 3A Status
+# PHYSICS DIGITAL HUB — V1.3.0 · Phase 3B
 
-**Checkpoint:** V1.2.0 · Phase 3A — Dual Axis Solar Tracker identity and eight-member integration  
-**Source baseline:** Uploaded `physics-digital-hub-main.zip`  
 **Project:** Dual Axis Solar Tracker — 3D Working Model  
-**Updated:** 25 November 2026
+**Base checkpoint:** V1.2.0 · Phase 3A completed and live-tested by the project owner  
+**Phase:** 3B — Premium Solar Technology Visual Transformation  
+**Package status:** Source implementation prepared for owner upload and deployment
 
-## Phase 3A scope completed in this source checkpoint
+## Phase 3B implementation included
 
-- Replaced the public project identity with **Dual Axis Solar Tracker — 3D Working Model** across the welcome experience, project labels, video title, metadata, emergency page, favicon, package description, and documentation.
-- Replaced the earlier project illustration with a solar-tracker SVG scene using a photovoltaic panel, two-axis support, solar path/orbit accents, and a sun motif.
-- Integrated the final eight-person roster in the approved order and codes:
+### Visual system
+- Introduced a coherent solar-technology visual treatment: midnight navy, graphite, warm amber/gold, technical blue, and soft white.
+- Refined the welcome, public video, Member Access, and private dashboard surfaces with more cinematic typography, soft lighting, polished borders, glass-like panels, and consistent component treatments.
+- Improved the five dashboard sections: Overview, Comments, Video & Updates, Analytics, and Members.
+- Improved public header, project film frame, action controls, access modal, member-selection cards, input focus treatment, dashboard navigation, metrics, analytics panels, comments cards, and directory cards.
 
-| Code | Member | Role / designation |
-|---|---|---|
-| 01 | Aman Alam | Administrator |
-| 02 | Abhirup Baru | Project Member · Project Leader |
-| 03 | Anik Ghosh | Project Member |
-| 04 | Saheb Mukherjee | Project Member |
-| 05 | Sandipan Mukherjee | Project Member |
-| 06 | Ananya Gope | Project Member |
-| 07 | Neha Kumari | Project Member |
-| 08 | Khushi Rawani | Project Member |
+### Required special effects
+- **Solar Spark:** canvas-based gold/amber/white/blue particle bursts on pointer clicks/taps and keyboard activation. The canvas does not intercept input. The active particle count is capped; animation only runs while particles are alive; hidden-page particles are cleared; reduced-motion users do not receive particle movement.
+- **Solar Signal Resolve:** Team Showcase heading and all eight public member names animate from short-lived technical glyphs into their exact final text. The animation is staged and does not continuously scramble text. Reduced-motion users immediately see the final wording.
+- **Pointer spotlight and 3D response:** team cards, member-selection cards, dashboard metric cards, and dashboard panels use pointer-relative light and subtle perspective movement on suitable pointer devices.
+- **Solar marquee:** restrained technical-topic strip added to the Team Showcase.
 
-- Added a gold **PROJECT LEADER** badge beside Abhirup Baru wherever his name is displayed in the public team credits, member access selection, selected profile, dashboard identity, overview team list, member directory, and directory CSV designation column.
-- Kept the leadership designation separate from database permissions: Aman remains the sole administrator, and Abhirup remains a normal `member` role.
-- Updated local secure member-account provisioning to support all eight accounts.
-- Updated the fresh-install profile-code constraint and added an upgrade migration that safely remaps the three existing members whose codes change, using temporary unique values before assigning their final codes.
-- Updated the verifier to check the exact eight-member order, frontend/provisioning consistency, Project Leader display hooks, solar identity, schema migration, visitor journey, reduced-motion behaviour, emergency configuration, and secret-file exclusions.
-- Removed the retired AI credit line and all superseded project identity text from source content and metadata.
+### Authentication error handling
+- `src/lib/supabase.ts` inspects the Edge Function HTTP response body (when available) and extracts its JSON error message rather than blindly exposing the generic Supabase transport message.
+- `src/App.tsx` maps authentication failures to safe, field-level feedback for wrong shared password, wrong individual password, rate limiting, expired shared session, and service/network failure.
+- The individual Supabase Auth invalid-credential condition is explicitly translated into a user-facing message. Other Auth service failures use a neutral availability message.
+- Error messages do not reveal raw Supabase/Edge Function transport strings or stack traces in the password forms.
 
-## Important deployment steps still required
+### Phase 3A preservation
+- The eight approved members, names, codes, and order are unchanged.
+- Aman Alam remains the sole database administrator.
+- Abhirup Baru remains a normal database `member` with the Project Leader display badge.
+- Existing authentication, database schema/migrations, RLS, Edge Functions, analytics, comments, Likes, export/backup operations, and dashboard role checks are preserved.
+- The current deployed shared gate setting **20 attempts / 60 seconds** has been carried into this source package. This prevents a future deployment from restoring the older 5/900 setting.
 
-The ZIP updates source code only. It does **not** apply changes to a live Supabase or Render project.
+## Main files changed
 
-1. Upload the extracted project files to the existing GitHub repository's `main` branch and commit them.
-2. For an existing Supabase database, apply `supabase/migrations/202611250001_phase3a_eight_member_roster.sql` in the SQL Editor. For a new database, run the initial migration and then the Phase 3A migration.
-3. On a trusted local computer, configure `scripts/.env.admin.local` and run `node scripts/bootstrap-members.mjs` to create/update the eight Auth accounts and profile rows. Enter passwords only in the local terminal. The script updates each named account's password as part of its existing secure setup process.
-4. Confirm the eight profiles and their codes in Supabase, and verify that only Aman has the `admin` role.
-5. Confirm Render's automatic deployment and test the public experience and member portal on real devices.
-6. Upload/configure the new Dual Axis Solar Tracker explainer video separately. Video upload and redesign phases 3B–3D are not included in this checkpoint.
+- `src/App.tsx`
+- `src/styles.css`
+- `src/lib/supabase.ts`
+- `supabase/functions/verify-shared-gate/index.ts` (carry-forward of current live 20/60 setting)
+- `scripts/verify-project.mjs`
+- `package.json` (version `1.3.0`)
+- `README.md`
+- `PROJECT_STATUS.md`
+- `PHASE_3B_PLAN.md` (implementation specification and acceptance checklist)
 
-## Verification record
+## Checks and known limitations
 
-Checks run for this checkpoint:
+- `node scripts/verify-project.mjs` is part of the package checks and is intended to validate the roster, project identity, Phase 3B features, friendly authentication path, rate-limit carry-forward, and local-secret exclusions.
+- TypeScript syntax is checked separately below. A full typecheck and Vite production build require installed package dependencies.
+- In this execution environment the npm registry was previously unreachable (`EAI_AGAIN`), so a dependency-backed `npm install`, `npm run typecheck`, and `npm run build` may not be available here. Do not interpret source verification as a successful production build.
+- After extracting the ZIP on the owner's Windows machine, run `npm.cmd install`, `npm.cmd run verify`, `npm.cmd run typecheck`, and `npm.cmd run build`. Resolve any failures before uploading to GitHub.
+- The ZIP does not include `node_modules`, `dist`, local `.env` files, Supabase server secrets, personal credentials, or passwords.
 
-- `npm run verify` — passed.
-- `node --check scripts/bootstrap-members.mjs` — passed.
-- `node --check scripts/verify-project.mjs` — passed.
-- TypeScript/TSX syntax transpilation and CSS/HTML/SVG/JSON structure checks — performed.
-- ZIP CRC/integrity verification — performed before delivery.
+## Owner deployment workflow
 
-The TypeScript typecheck and Vite production build could not be completed in this environment: `npm install` timed out while npm could not resolve `registry.npmjs.org` (`EAI_AGAIN`). No dependencies are bundled in the ZIP. Run `npm install` and `npm run build` after downloading it in an environment with npm registry access.
+1. Keep a copy of the current working project as a rollback point.
+2. Extract this package and upload its project contents to the existing GitHub repository on `main`.
+3. Commit with a message such as `feat: implement Phase 3B premium solar visual transformation`.
+4. Check the GitHub build workflow.
+5. Wait for Render's automatic deploy to succeed.
+6. Supabase Edge Function source has no behavioral changes in this phase except preserving the already-live `20 / 60` rate-limit setting in the source. The verify-shared-gate function does not require redeployment if the live function already has that setting. Redeploy only if the function source is actually changed during review.
+7. Perform the Phase 3B live acceptance checks in `PHASE_3B_PLAN.md`.
 
-A source-level check does not prove a live Supabase migration, successful account provisioning, Edge Function deployment, or Render deployment. Those operations must be confirmed against the actual connected services.
+## Phase 3B acceptance checks
+
+- [ ] Desktop and mobile welcome screen visuals.
+- [ ] Team Showcase shows all eight members in the approved order.
+- [ ] Abhirup Baru's Project Leader badge remains correct.
+- [ ] Team heading and member names resolve from the scramble effect into exact text.
+- [ ] Reduced-motion setting immediately shows final readable text.
+- [ ] Solar Spark particle bursts appear on click/tap/keyboard activation without blocking interaction.
+- [ ] Reduced-motion setting disables particle movement.
+- [ ] Shared wrong-password attempt displays friendly inline text.
+- [ ] Individual wrong-password attempt displays friendly inline text.
+- [ ] Rate-limit and service failures display friendly non-technical feedback.
+- [ ] All eight individual accounts work.
+- [ ] Administrator-only and Project Member permissions remain correct.
+- [ ] Public video, Like, comments, visitor journey, and MP4 link remain functional.
+- [ ] All five dashboard tabs work and are visually consistent.
+- [ ] Responsive layout has no unintended clipping or horizontal overflow.
+- [ ] GitHub build is green and Render deploy succeeds.
+- [ ] Live visual and functional checks pass.
 
 ## Scope boundaries
 
-- **3A:** Project identity, final eight-member roster, Project Leader badge, account provisioning support, schema upgrade, verification and documentation — included here.
-- **3B:** Full visual transformation — separate future phase.
-- **3C:** Administrator video upload and persistent storage — separate future phase.
-- **3D:** Solar-themed Members Portal redesign — separate future phase.
-- **3E:** Full live testing and acceptance — follows implementation and deployment.
+Phase 3B is a visual and frontend-interaction upgrade. It does not introduce the separately planned later video upload/storage capability or other new backend product features. Those remain future phases.

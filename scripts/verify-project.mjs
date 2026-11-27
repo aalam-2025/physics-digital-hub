@@ -8,6 +8,7 @@ const requiredFiles = [
   'package.json',
   'README.md',
   'PROJECT_STATUS.md',
+  'PHASE_3B_PLAN.md',
   'src/main.tsx',
   'src/App.tsx',
   'src/styles.css',
@@ -98,7 +99,7 @@ if (!app.includes("const PROJECT_LEADER_NAME = 'Abhirup Baru'")) fail('Abhirup B
 if (!app.includes('function ProjectLeaderBadge()') || !styles.includes('.project-leader-badge')) fail('Project Leader badge component or styling is missing');
 if (!app.includes("role: 'member' }")) fail('Project Leader must remain a normal member, not an administrator');
 for (const surface of [
-  '<MemberName name={member.name}/>',
+  '<MemberName name={member.name}',
   '<MemberName name={member.display_name}/>',
   '<MemberName name={dashboard.profile.display_name}/>',
   '<MemberName name={selectedMember.name}/>',
@@ -124,9 +125,18 @@ if (!/@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.credit-line\{opacit
 }
 
 if (!app.includes('function SolarTrackerBlueprint()') || !styles.includes('.solar-tracker-blueprint')) fail('solar tracker artwork or its stylesheet class is missing');
-if (!app.includes('BUILT BY <span>EIGHT.</span>') || !app.includes('EIGHT MEMBERS. ONE VISION.')) fail('public team page is not labelled for eight members');
+if (!app.includes('ScrambleText text="BUILT BY"') || !app.includes('ScrambleText text="EIGHT."') || !app.includes('EIGHT MEMBERS. ONE VISION.')) fail('public team page is missing the Solar Signal Resolve heading and eight-member label');
+if (!app.includes('function ScrambleText(') || !app.includes('prefers-reduced-motion: reduce')) fail('Team Showcase text-scramble component or reduced-motion handling is missing');
+if (!app.includes('function SolarParticleCanvas()') || !app.includes("window.addEventListener('pointerdown', burst") || !app.includes("window.addEventListener('click', keyboardActivation")) fail('Solar Spark particle interaction is missing pointer or keyboard activation support');
+if (!styles.includes('.solar-particle-canvas') || !styles.includes('.team-solar-marquee') || !styles.includes('.credit-line:hover')) fail('Phase 3B solar particle, team marquee, or premium team-card styles are missing');
+if (!app.includes('handleCardPointerMove') || !app.includes('perspective(900px)')) fail('pointer-responsive spotlight/3D card interaction is missing');
+if (!app.includes('auth-feedback') || !app.includes('friendlyAuthenticationMessage')) fail('friendly inline authentication feedback is missing');
+const supabaseClient = fs.readFileSync(path.join(root, 'src/lib/supabase.ts'), 'utf8');
+if (!supabaseClient.includes('context.clone().json()') || !supabaseClient.includes('safeFunctionError')) fail('Supabase Edge Function response bodies are not parsed for friendly errors');
+const gateFunction = fs.readFileSync(path.join(root, 'supabase/functions/verify-shared-gate/index.ts'), 'utf8');
+if (!gateFunction.includes("enforceLimit(admin, request, 'shared-gate', 20, 60)")) fail('latest live shared-gate rate-limit setting 20/60 was not preserved');
 if (!app.includes('Eight individual accounts') || !app.includes('All eight members can delete them.')) fail('member counts in dashboard copy are not updated');
-if (!app.includes('DUAL AXIS SOLAR TRACKER') || !app.includes('Dual Axis Solar Tracker project video')) fail('public project identity/video title is incomplete');
+if (!app.includes('DUAL AXIS SOLAR TRACKER') || !app.includes('Dual Axis Solar Tracker project video') || !app.includes('FOLLOW THE SUN.') || !app.includes('ACROSS TWO AXES.')) fail('public project identity/video title is incomplete');
 
 const allowedCodes = "member_code in ('01','02','03','04','05','06','07','08')";
 if (!initialSchema.includes(allowedCodes)) fail('fresh-install schema does not allow member codes 01–08');
@@ -139,7 +149,7 @@ for (const [email, code] of [
   if (!rosterMigration.includes(email) || !rosterMigration.includes(code)) fail(`database migration does not map ${email} to its approved new code`);
 }
 if (!rosterMigration.includes(allowedCodes)) fail('upgrade migration does not finish with the eight-code constraint');
-if (packageJson.version !== '1.2.0') fail('package version must be 1.2.0 for the Phase 3A checkpoint');
+if (packageJson.version !== '1.3.0') fail('package version must be 1.3.0 for the Phase 3B checkpoint');
 
 const identityFiles = [
   'src/App.tsx', 'src/styles.css', 'README.md', 'PROJECT_STATUS.md', 'index.html',
@@ -155,5 +165,5 @@ const secretFiles = ['.env.local', 'scripts/.env.admin.local', 'supabase/functio
 const presentSecrets = secretFiles.filter((file) => fs.existsSync(path.join(root, file)));
 if (presentSecrets.length && process.env.CI === 'true') fail(`local secret files must not be committed: ${presentSecrets.join(', ')}`);
 
-console.log(`Project verification passed: ${requiredFiles.length} required files, exact eight-member order/codes in frontend and provisioning, Project Leader UI/export, solar-tracker identity, database upgrade path, QR navigation, reading windows, reduced-motion support, emergency configuration, and secret-file checks.`);
+console.log(`Project verification passed: ${requiredFiles.length} required files, exact eight-member order/codes, Project Leader UI/export, solar identity, Phase 3B particle and scramble effects, friendly authentication feedback, 20/60 shared-gate limit, responsive/reduced-motion styles, database upgrade path, QR navigation, emergency configuration, and secret-file checks.`);
 console.log('Note: this check does not replace TypeScript compilation, Supabase migration execution, secure account provisioning, Edge Function deployment, or live service tests.');
