@@ -110,16 +110,22 @@ for (const surface of [
 if (!app.includes('selectedMember && <MemberName name={selectedMember.name}/>')) fail('Selected-profile confirmation does not show the Project Leader badge');
 if (!app.includes('isProjectLeader(dashboard.profile.display_name) && <> <ProjectLeaderBadge/>')) fail('Dashboard welcome heading does not show the Project Leader badge');
 
-// Protect the public QR visitor journey and its full reading windows.
+// Protect manual-only visitor navigation across all presentation screens and the 5-second visual Welcome guidance cloud.
 const visitorJourneyChecks = [
-  ['welcome-to-team manual navigation', /onClick=\{\(\) => setScreen\('members'\)\}[^>]*>MEET THE TEAM/],
+  ['welcome-to-team manual navigation component', /<WelcomeTeamButton3D\b[^>]*onActivate=\{handleMeetTeamClick\}/],
+  ['welcome manual-only transition guard', /resolveNextScreenOnAction\(current,\s*'manual-meet-team'\)/],
   ['team-to-video manual navigation', /onClick=\{\(\) => setScreen\('video'\)\}[^>]*>WATCH PROJECT EXPLANATION/],
-  ['four-second welcome reading window', /screen === 'welcome' \? 4000/],
-  ['five-second team reading window', /screen === 'members' \? 5000/],
+  ['five-second visual-only guidance cloud scheduler', /createWelcomeGuidanceScheduler\([\s\S]*WELCOME_GUIDANCE_DELAY_MS/],
   ['staggered team reveals complete early enough to read', /animationDelay: `\$\{index \* 300\}ms`/],
+];
+const forbiddenAutoAdvancePatterns = [
+  ['obsolete 4s/5s auto-advance timer', /screen === 'welcome' \? 4000|screen === 'members' \? 5000/],
+  ['forbidden video ended screen switch', /\.on\(\s*['"]ended['"]/],
 ];
 const missingJourneyFeatures = visitorJourneyChecks.filter(([, pattern]) => !pattern.test(app)).map(([label]) => label);
 if (missingJourneyFeatures.length) fail(`visitor journey checks missing: ${missingJourneyFeatures.join(', ')}`);
+const forbiddenHits = forbiddenAutoAdvancePatterns.filter(([, pattern]) => pattern.test(app)).map(([label]) => label);
+if (forbiddenHits.length) fail(`forbidden automatic screen transition detected: ${forbiddenHits.join(', ')}`);
 if (!/@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.credit-line\{opacity:1;transform:none/.test(styles)) {
   fail('reduced-motion styles must reveal all team names without staggered animation');
 }
@@ -165,5 +171,28 @@ const secretFiles = ['.env.local', 'scripts/.env.admin.local', 'supabase/functio
 const presentSecrets = secretFiles.filter((file) => fs.existsSync(path.join(root, file)));
 if (presentSecrets.length && process.env.CI === 'true') fail(`local secret files must not be committed: ${presentSecrets.join(', ')}`);
 
-console.log(`Project verification passed: ${requiredFiles.length} required files, exact eight-member order/codes, Project Leader UI/export, solar identity, Phase 3B particle and scramble effects, friendly authentication feedback, 20/60 shared-gate limit, responsive/reduced-motion styles, database upgrade path, QR navigation, emergency configuration, and secret-file checks.`);
+const cinematicDirectorSource = fs.readFileSync(path.join(root, 'src/lib/memberCinematicDirector.ts'), 'utf8');
+for (const concept of [
+  'solar-tech-awakening',
+  'golden-solar-crown',
+  'orbital-emergence',
+  'platinum-spotlight',
+  'chrome-light-trail',
+  'floating-platinum',
+  'radiant-precision',
+  'particle-finale',
+]) {
+  if (!cinematicDirectorSource.includes(concept) || !styles.includes(concept)) {
+    fail(`Stage 2 Refinement 3 reveal concept "${concept}" is missing from director or stylesheet`);
+  }
+}
+if (!app.includes('createMemberCinematicDirector(') || !app.includes('MemberCinematicIntroStage')) {
+  fail('Team Showcase sequential cinematic director or intro stage component is not wired in App.tsx');
+}
+const scrollDirectorSource = fs.readFileSync(path.join(root, 'src/lib/cinematicScrollDirector.ts'), 'utf8');
+if (!scrollDirectorSource.includes('createCinematicScrollDirector') || !app.includes('createCinematicScrollDirector(')) {
+  fail('Stage 2 Refinement 3 CinematicScrollDirector is missing or not wired in App.tsx');
+}
+
+console.log(`Project verification passed: ${requiredFiles.length} required files, exact eight-member order/codes, Project Leader UI/export, solar identity, Phase 3B particle and scramble effects, Stage 2 Refinement 3 eight-member sequential cinematic director and auto-follow scroll director, friendly authentication feedback, 20/60 shared-gate limit, responsive/reduced-motion styles, database upgrade path, QR navigation, emergency configuration, and secret-file checks.`);
 console.log('Note: this check does not replace TypeScript compilation, Supabase migration execution, secure account provisioning, Edge Function deployment, or live service tests.');

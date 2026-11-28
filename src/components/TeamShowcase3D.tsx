@@ -1,11 +1,27 @@
 import type { CSSProperties, ReactNode } from 'react';
+import type { MemberRevealConcept, MemberRevealPhase } from '../lib/memberCinematicDirector';
 import type { IdentityVariant, MemberDesignation } from '../lib/teamRoster';
 
-export function TeamShowcaseAtmosphere() {
+export function TeamShowcaseAtmosphere({
+  activeConcept = null,
+  sequenceComplete = true,
+}: {
+  activeConcept?: MemberRevealConcept | null;
+  sequenceComplete?: boolean;
+}) {
+  const stageClass = [
+    'team-showcase-atmosphere',
+    activeConcept ? `is-concept-${activeConcept}` : '',
+    sequenceComplete ? 'is-complete' : 'is-choreographing',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className="team-showcase-atmosphere" aria-hidden="true">
+    <div className={stageClass} aria-hidden="true">
       <div className="team-atmosphere-glow team-atmosphere-glow-solar" />
       <div className="team-atmosphere-glow team-atmosphere-glow-cobalt" />
+      <div className="team-stage-spotlight" />
       <svg
         className="team-solar-reticle"
         viewBox="0 0 1200 720"
@@ -51,16 +67,28 @@ function ProjectLeaderEmblem() {
   );
 }
 
-export function DesignationTag3D({ designation }: { designation: MemberDesignation }) {
+export function DesignationTag3D({
+  designation,
+  revealConcept,
+  visible = true,
+}: {
+  designation: MemberDesignation;
+  revealConcept?: MemberRevealConcept;
+  visible?: boolean;
+}) {
+  if (!visible) return null;
+
   const tagStyle = {
-    '--tag-entrance-delay': `${designation.entranceDelayMs}ms`,
+    '--tag-entrance-delay': '0ms',
     '--tag-float-duration': `${designation.floatDurationSec}s`,
     '--tag-float-delay': `${designation.floatDelaySec}s`,
   } as CSSProperties;
 
+  const conceptClass = revealConcept ? `tag-concept-${revealConcept}` : '';
+
   return (
     <div
-      className={`designation-tag-3d is-${designation.kind} is-${designation.accentVariant}`}
+      className={`designation-tag-3d is-${designation.kind} is-${designation.accentVariant} ${conceptClass}`.trim()}
       style={tagStyle}
       data-testid={`designation-tag-${designation.kind}`}
     >
@@ -126,21 +154,149 @@ export function CardPrecisionAccents({ variant }: { variant: IdentityVariant }) 
   );
 }
 
+/**
+ * Individual card cinematic stage layer providing unique reveal choreography
+ * per member without covering nameplate legibility or interrupting settled cards.
+ */
+export function MemberCinematicIntroStage({
+  concept,
+  phase,
+}: {
+  concept: MemberRevealConcept;
+  phase: MemberRevealPhase;
+}) {
+  if (phase === 'waiting') return null;
+
+  return (
+    <div
+      className={`member-cinematic-fx fx-concept-${concept} phase-${phase}`}
+      aria-hidden="true"
+    >
+      {concept === 'solar-tech-awakening' && (
+        <>
+          <span className="fx-aman-sweep" />
+          <svg className="fx-stage-svg fx-aman-svg" viewBox="0 0 360 156" fill="none" preserveAspectRatio="none">
+            <path className="aman-grid-line" d="M18 24H342M18 132H342" stroke="#62ddff" strokeOpacity="0.38" strokeWidth="1" strokeDasharray="324" />
+            <path className="aman-grid-vert" d="M46 14V142M314 14V142" stroke="#53c8ff" strokeOpacity="0.28" strokeWidth="1" strokeDasharray="128" />
+            <g className="aman-azimuth-reticle" stroke="#85ebff">
+              <circle cx="304" cy="96" r="24" strokeWidth="1.1" strokeOpacity="0.62" strokeDasharray="5 4" />
+              <circle cx="304" cy="96" r="14" strokeWidth="0.9" strokeOpacity="0.45" />
+              <path d="M304 66V126M274 96H334" strokeWidth="0.9" strokeOpacity="0.52" />
+            </g>
+          </svg>
+        </>
+      )}
+
+      {concept === 'golden-solar-crown' && (
+        <>
+          <span className="fx-abhirup-bloom" />
+          <span className="fx-abhirup-sweep" />
+          <svg className="fx-stage-svg fx-abhirup-svg" viewBox="0 0 360 156" fill="none" preserveAspectRatio="none">
+            <g className="abhirup-rays" stroke="#ffd884" strokeLinecap="round">
+              <path d="M180 78L94 20M180 78L266 20M180 78L52 78M180 78L308 78M180 78L108 136M180 78L252 136" strokeWidth="1" strokeOpacity="0.34" />
+            </g>
+            <path className="abhirup-meridian-arc" d="M68 122C118 42 242 42 292 122" stroke="#ffe19e" strokeWidth="1.2" strokeOpacity="0.55" strokeDasharray="280" />
+            <path className="abhirup-meridian-inner" d="M108 130C144 68 216 68 252 130" stroke="#ffb84d" strokeWidth="1" strokeOpacity="0.48" strokeDasharray="180" />
+            <g className="abhirup-crown-brackets" stroke="#ffe8b8" strokeWidth="1.4">
+              <path d="M22 44V16H52M338 44V16H308" strokeOpacity="0.72" />
+              <path d="M22 112V140H52M338 112V140H308" strokeOpacity="0.72" />
+            </g>
+          </svg>
+        </>
+      )}
+
+      {concept === 'orbital-emergence' && (
+        <>
+          <span className="fx-anik-sweep" />
+          <svg className="fx-stage-svg fx-anik-svg" viewBox="0 0 360 156" fill="none" preserveAspectRatio="none">
+            <ellipse
+              className="anik-orbit-path-a"
+              cx="180"
+              cy="78"
+              rx="156"
+              ry="58"
+              transform="rotate(-11 180 78)"
+              stroke="#79dcff"
+              strokeWidth="1.15"
+              strokeOpacity="0.48"
+              strokeDasharray="680"
+            />
+            <ellipse
+              className="anik-orbit-path-b"
+              cx="180"
+              cy="78"
+              rx="142"
+              ry="48"
+              transform="rotate(14 180 78)"
+              stroke="#dbeeff"
+              strokeWidth="0.95"
+              strokeOpacity="0.34"
+              strokeDasharray="620"
+            />
+            <circle className="anik-orbit-node" cx="322" cy="52" r="3" fill="#8beeff" />
+            <circle className="anik-orbit-node-b" cx="44" cy="108" r="2.4" fill="#e6f5ff" />
+          </svg>
+        </>
+      )}
+
+      {concept === 'platinum-spotlight' && (
+        <span className="fx-saheb-spotlight" />
+      )}
+
+      {concept === 'chrome-light-trail' && (
+        <span className="fx-sandipan-chrome-trail" />
+      )}
+
+      {concept === 'floating-platinum' && (
+        <span className="fx-ananya-mist" />
+      )}
+
+      {concept === 'radiant-precision' && (
+        <>
+          <span className="fx-neha-radial" />
+          <svg className="fx-stage-svg fx-neha-svg" viewBox="0 0 240 120" fill="none" preserveAspectRatio="none">
+            <path d="M24 20H78M162 100H216" stroke="#d8eeff" strokeWidth="1" strokeOpacity="0.45" />
+          </svg>
+        </>
+      )}
+
+      {concept === 'particle-finale' && (
+        <>
+          <span className="fx-khushi-ribbon" />
+          <span className="fx-khushi-motes">
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function DimensionalMemberName({
   nameText,
   revealDelayMs,
+  concept,
+  phase = 'settled',
   children,
 }: {
   nameText: string;
   revealDelayMs: number;
+  concept?: MemberRevealConcept;
+  phase?: MemberRevealPhase;
   children: ReactNode;
 }) {
   const style = {
     '--name-reveal-delay': `${revealDelayMs}ms`,
   } as CSSProperties;
 
+  const conceptClass = concept ? `name-concept-${concept} phase-${phase}` : '';
+
   return (
-    <span className="member-name-3d" style={style}>
+    <span className={`member-name-3d ${conceptClass}`.trim()} style={style}>
       <span className="member-name-3d-shadow" aria-hidden="true">
         {nameText}
       </span>

@@ -10,11 +10,29 @@ import {
   CardPrecisionAccents,
   DesignationTag3D,
   DimensionalMemberName,
+  MemberCinematicIntroStage,
   TeamShowcaseAtmosphere,
 } from './components/TeamShowcase3D';
+import { WelcomeGuidanceCloud, WelcomeTeamButton3D } from './components/WelcomeControls3D';
 import { env, isDemoMode } from './lib/config';
+import {
+  createCinematicScrollDirector,
+  type CinematicScrollDirector,
+  type ScrollMotionState,
+} from './lib/cinematicScrollDirector';
+import {
+  createInitialSnapshot,
+  createMemberCinematicDirector,
+  getMemberRevealSpec,
+  type CinematicDirectorSnapshot,
+} from './lib/memberCinematicDirector';
 import { gateFunction, memberFunction, publicFunction, supabase } from './lib/supabase';
 import { getCardRevealTiming, getMemberDesignation, getMemberIdentityProfile } from './lib/teamRoster';
+import {
+  createWelcomeGuidanceScheduler,
+  resolveNextScreenOnAction,
+  WELCOME_GUIDANCE_DELAY_MS,
+} from './lib/welcomeGuidance';
 
 const SolarTracker3D = lazy(() => import('./components/SolarTracker3D'));
 
@@ -408,10 +426,14 @@ function handleCardPointerMove(event: ReactPointerEvent<HTMLElement>) {
   if (event.pointerType === 'touch') return;
   const element = event.currentTarget;
   const bounds = element.getBoundingClientRect();
+  if (!bounds.width || !bounds.height) return;
   const x = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
   const y = Math.max(0, Math.min(1, (event.clientY - bounds.top) / bounds.height));
   element.style.setProperty('--card-x', `${x * 100}%`);
   element.style.setProperty('--card-y', `${y * 100}%`);
+  if (element.classList.contains('is-waiting') || element.classList.contains('is-introducing')) {
+    return;
+  }
   const rotateX = (0.5 - y) * 4.2;
   const rotateY = (x - 0.5) * 5.2;
   element.style.transform = `perspective(900px) translateY(-3px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
@@ -478,9 +500,17 @@ function App() {
   const [tracker3dStatus, setTracker3dStatus] = useState<'loading' | 'ready' | 'fallback'>(() =>
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'fallback' : 'loading',
   );
-  const [loadingGraceExpired, setLoadingGraceExpired] = useState(false);
-  const [welcomeInteracting, setWelcomeInteracting] = useState(false);
-  const [membersInteracting, setMembersInteracting] = useState(false);
+  const [guidanceVisible, setGuidanceVisible] = useState(false);
+  const [guidanceDismissed, setGuidanceDismissed] = useState(false);
+  const [teamRevealState, setTeamRevealState] = useState<CinematicDirectorSnapshot>(() => createInitialSnapshot());
+  const [scrollFollowState, setScrollFollowState] = useState<ScrollMotionState>('idle');
+  const guidanceSchedulerRef = useRef<ReturnType<typeof createWelcomeGuidanceScheduler> | null>(null);
+  const welcomeNavigatingRef = useRef(false);
+  const welcomeCtaZoneRef = useRef<HTMLDivElement>(null);
+  const meetTeamBtnRef = useRef<HTMLButtonElement>(null);
+  const teamScreenRef = useRef<HTMLElement>(null);
+  const scrollDirectorRef = useRef<CinematicScrollDirector | null>(null);
+  const stageLightFrameRef = useRef<number>(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const pageVisitTrackedRef = useRef(false);
   const [reloadCommentsTick, setReloadCommentsTick] = useState(0);
@@ -490,37 +520,201 @@ function App() {
     window.setTimeout(() => setToast(''), 3600);
   }, []);
 
+  // Screen navigation is strictly manual across all three presentation screens.
+  // While Screen 01 is active, reveal only the non-navigating visual guidance cloud
+  // after 5,000 ms if the visitor has not activated MEET THE TEAM yet.
   useEffect(() => {
-    if (screen !== 'welcome' || view !== 'public') {
-      setWelcomeInteracting(false);
+    if (view !== 'public' || screen !== 'welcome') {
+      guidanceSchedulerRef.current?.cleanup();
+      guidanceSchedulerRef.current = null;
+      setGuidanceVisible(false);
+      return;
     }
-    if (screen !== 'members' || view !== 'public') {
-      setMembersInteracting(false);
-    }
+
+    welcomeNavigatingRef.current = false;
+    setGuidanceDismissed(false);
+    setGuidanceVisible(false);
+
+    const scheduler = createWelcomeGuidanceScheduler(
+      (visible) => setGuidanceVisible(visible),
+      WELCOME_GUIDANCE_DELAY_MS,
+    );
+    guidanceSchedulerRef.current = scheduler;
+    scheduler.start();
+
+    return () => {
+      scheduler.cleanup();
+      if (guidanceSchedulerRef.current === scheduler) {
+        guidanceSchedulerRef.current = null;
+      }
+    };
   }, [screen, view]);
 
+  // Sequential cinematic member reveal director + coordinated camera scroll director on Screen 02.
   useEffect(() => {
-    if (view !== 'public' || screen !== 'welcome' || tracker3dStatus !== 'loading' || loadingGraceExpired) return;
-    const graceTimer = window.setTimeout(() => {
-      setLoadingGraceExpired(true);
-    }, 2500);
-    return () => window.clearTimeout(graceTimer);
-  }, [screen, view, tracker3dStatus, loadingGraceExpired]);
+    if (view !== 'public' || screen !== 'members') {
+      scrollDirectorRef.current?.cleanup();
+      scrollDirectorRef.current = null;
+      setScrollFollowState('idle');
+      setTeamRevealState(createInitialSnapshot());
+      return;
+    }
 
-  const welcomeWaitFor3D = tracker3dStatus === 'loading' && !loadingGraceExpired;
+    if (window.scrollY > 0) {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
 
-  // Keep the full reading time for every visitor. Reduced-motion preferences
-  // are handled by CSS; they should not shorten how long the team names remain visible.
-  // The on-screen Continue buttons also let visitors advance at their own pace.
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const getRowPeerCodes = (memberCode: string, viewportWidth: number): string[] => {
+      if (viewportWidth > 1100) {
+        return ['01', '02', '03'].includes(memberCode)
+          ? ['01', '02', '03']
+          : ['04', '05', '06', '07', '08'];
+      }
+      if (viewportWidth > 760) {
+        if (['01', '02'].includes(memberCode)) return ['01', '02'];
+        if (['03', '04'].includes(memberCode)) return ['03', '04'];
+        if (['05', '06'].includes(memberCode)) return ['05', '06'];
+        return ['07', '08'];
+      }
+      if (viewportWidth > 380) {
+        if (['04', '05'].includes(memberCode)) return ['04', '05'];
+        if (['06', '07'].includes(memberCode)) return ['06', '07'];
+        return [memberCode];
+      }
+      return [memberCode];
+    };
+
+    const getCardElement = (code: string): HTMLElement | null =>
+      teamScreenRef.current?.querySelector<HTMLElement>(`[data-member-code="${code}"]`) ?? null;
+
+    const scrollDirector = createCinematicScrollDirector({
+      reducedMotion: motionPreference.matches,
+      getCardElement,
+      getRowGroupElements: (code, viewportWidth) =>
+        getRowPeerCodes(code, viewportWidth)
+          .map((peer) => getCardElement(peer))
+          .filter((el): el is HTMLElement => Boolean(el)),
+      onStateChange: setScrollFollowState,
+    });
+    scrollDirectorRef.current = scrollDirector;
+    setScrollFollowState(scrollDirector.getState());
+
+    let resizeObserver: ResizeObserver | null = null;
+    const stageEl = teamScreenRef.current;
+    if (stageEl && typeof ResizeObserver !== 'undefined' && !motionPreference.matches) {
+      let lastWidth = Math.round(stageEl.getBoundingClientRect().width);
+      let lastHeight = Math.round(stageEl.getBoundingClientRect().height);
+      resizeObserver = new ResizeObserver((entries) => {
+        const entry = entries[0];
+        if (!entry) return;
+        const nextWidth = Math.round(entry.contentRect.width);
+        const nextHeight = Math.round(entry.contentRect.height);
+        if (nextWidth === lastWidth && nextHeight === lastHeight) return;
+        lastWidth = nextWidth;
+        lastHeight = nextHeight;
+        scrollDirector.recheckLayout();
+      });
+      resizeObserver.observe(stageEl);
+    }
+
+    const director = createMemberCinematicDirector((snapshot) => {
+      setTeamRevealState(snapshot);
+    });
+
+    if (motionPreference.matches) {
+      director.completeImmediately();
+    } else {
+      director.start();
+    }
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        director.setPaused(true);
+      } else if (!motionPreference.matches) {
+        director.setPaused(false);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      resizeObserver?.disconnect();
+      director.cleanup();
+      scrollDirector.cleanup();
+      if (scrollDirectorRef.current === scrollDirector) {
+        scrollDirectorRef.current = null;
+      }
+    };
+  }, [screen, view]);
+
+  // Synchronize CinematicScrollDirector cleanly with active member transitions from memberCinematicDirector.
   useEffect(() => {
-    if (view !== 'public') return;
-    if (screen === 'welcome' && (welcomeInteracting || welcomeWaitFor3D)) return;
-    if (screen === 'members' && membersInteracting) return;
-    const delay = screen === 'welcome' ? 4000 : screen === 'members' ? 5000 : 0;
-    if (!delay) return;
-    const timer = window.setTimeout(() => setScreen(screen === 'welcome' ? 'members' : 'video'), delay);
-    return () => window.clearTimeout(timer);
-  }, [screen, view, welcomeInteracting, membersInteracting, welcomeWaitFor3D]);
+    if (view !== 'public' || screen !== 'members') return;
+    const scrollDirector = scrollDirectorRef.current;
+    if (!scrollDirector) return;
+
+    if (teamRevealState.complete) {
+      scrollDirector.markSequenceComplete();
+      return;
+    }
+
+    if (teamRevealState.paused) {
+      scrollDirector.setPaused(true);
+      return;
+    }
+
+    scrollDirector.setPaused(false);
+    if (teamRevealState.activeIndex >= 0 && teamRevealState.activeIndex < MEMBERS.length) {
+      const member = MEMBERS[teamRevealState.activeIndex];
+      const spec = getMemberRevealSpec(member.code);
+      const hasDesignation = Boolean(getMemberDesignation(member.code));
+      scrollDirector.followMember(teamRevealState.activeIndex, spec, hasDesignation);
+    }
+  }, [screen, view, teamRevealState.activeIndex, teamRevealState.complete, teamRevealState.paused]);
+
+  useEffect(() => () => {
+    if (stageLightFrameRef.current) {
+      window.cancelAnimationFrame(stageLightFrameRef.current);
+    }
+  }, []);
+
+  const handleTeamStagePointerMove = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    if (event.pointerType === 'touch') return;
+    const target = teamScreenRef.current;
+    if (!target || stageLightFrameRef.current) return;
+    const clientX = event.clientX;
+    const clientY = event.clientY;
+    stageLightFrameRef.current = window.requestAnimationFrame(() => {
+      stageLightFrameRef.current = 0;
+      const bounds = target.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+      const x = Math.max(0, Math.min(100, ((clientX - bounds.left) / bounds.width) * 100));
+      const y = Math.max(0, Math.min(100, ((clientY - bounds.top) / bounds.height) * 100));
+      target.style.setProperty('--stage-light-x', `${x.toFixed(1)}%`);
+      target.style.setProperty('--stage-light-y', `${y.toFixed(1)}%`);
+    });
+  }, []);
+
+  const handleTeamStagePointerLeave = useCallback(() => {
+    if (stageLightFrameRef.current) {
+      window.cancelAnimationFrame(stageLightFrameRef.current);
+      stageLightFrameRef.current = 0;
+    }
+    const target = teamScreenRef.current;
+    if (!target) return;
+    target.style.removeProperty('--stage-light-x');
+    target.style.removeProperty('--stage-light-y');
+  }, []);
+
+  const handleMeetTeamClick = useCallback(() => {
+    if (welcomeNavigatingRef.current || view !== 'public' || screen !== 'welcome') return;
+    welcomeNavigatingRef.current = true;
+    guidanceSchedulerRef.current?.dismiss();
+    setGuidanceDismissed(true);
+    setGuidanceVisible(false);
+    setScreen((current) => resolveNextScreenOnAction(current, 'manual-meet-team'));
+  }, [screen, view]);
 
   useEffect(() => {
     if (view !== 'public' || screen !== 'video') return;
@@ -854,7 +1048,22 @@ function App() {
       {screen === 'welcome' && <main className="intro-screen welcome-screen">
         <div className="top-meta"><span className="school-lockup"><img src="/assets/sks-school-crest.webp" alt=""/><School size={14}/> S.K.S PUBLIC SCHOOL</span><span>ANNUAL EXHIBITION · PHYSICS</span></div>
         <div className="welcome-layout">
-          <div className="welcome-copy"><div className="live-label"><span/> SCHOOL PROJECT PRESENTATION</div><p className="pretitle">PROUDLY PRESENTS</p><h1>WELCOME TO<br/><span>PHYSICS DIGITAL HUB</span></h1><p className="welcome-subtitle">Explore how a solar panel follows the Sun across two axes.</p><div className="welcome-rule"><span/><small>A SCHOOL ANNUAL EXHIBITION PROJECT</small></div><button className="intro-continue" type="button" onFocus={() => setWelcomeInteracting(true)} onBlur={() => setWelcomeInteracting(false)} onClick={() => setScreen('members')}>MEET THE TEAM <ArrowRight size={15}/></button></div>
+          <div className="welcome-copy">
+            <div className="live-label"><span/> SCHOOL PROJECT PRESENTATION</div>
+            <p className="pretitle">PROUDLY PRESENTS</p>
+            <h1>WELCOME TO<br/><span>PHYSICS DIGITAL HUB</span></h1>
+            <p className="welcome-subtitle">Explore how a solar panel follows the Sun across two axes.</p>
+            <div className="welcome-rule"><span/><small>A SCHOOL ANNUAL EXHIBITION PROJECT</small></div>
+            <div className="welcome-cta-zone" ref={welcomeCtaZoneRef}>
+              <WelcomeTeamButton3D buttonRef={meetTeamBtnRef} onActivate={handleMeetTeamClick} />
+              <WelcomeGuidanceCloud
+                visible={guidanceVisible}
+                dismissed={guidanceDismissed}
+                ctaZoneRef={welcomeCtaZoneRef}
+                buttonRef={meetTeamBtnRef}
+              />
+            </div>
+          </div>
           <div className="welcome-art">
             <div className="art-orbit orbit-a"/><div className="art-orbit orbit-b"/>
             <div className={`solar-tracker-3d-stage ${tracker3dStatus === 'ready' ? 'is-ready' : ''}`}>
@@ -864,8 +1073,6 @@ function App() {
                     <SolarTracker3D
                       onReady={() => setTracker3dStatus('ready')}
                       onUnavailable={() => setTracker3dStatus('fallback')}
-                      onInteractionStart={() => setWelcomeInteracting(true)}
-                      onInteractionEnd={() => setWelcomeInteracting(false)}
                     />
                   </Suspense>
                 </Tracker3DErrorBoundary>
@@ -879,79 +1086,103 @@ function App() {
             <div className="art-corner corner-one"/><div className="art-corner corner-two"/>
           </div>
         </div>
-        <div className="intro-bottom"><span>DUAL AXIS SOLAR TRACKER</span><span className="intro-progress"><i className={welcomeInteracting || welcomeWaitFor3D ? 'is-paused' : ''}/></span><span>01 / 03</span></div>
+        <div className="intro-bottom"><span>DUAL AXIS SOLAR TRACKER</span><span className="intro-progress intro-progress-stage1"><i/></span><span>01 / 03</span></div>
       </main>}
 
-      {screen === 'members' && <main className="intro-screen members-screen" data-testid="team-showcase">
-        <TeamShowcaseAtmosphere />
-        <div className="members-header">
-          <p className="eyebrow">THE TEAM BEHIND THE MODEL · S.K.S PUBLIC SCHOOL</p>
-          <h1>
-            <ScrambleText text="BUILT BY" disableScramble className="hero-reveal-line hero-reveal-1" />
-            <br/>
-            <span><ScrambleText text="EIGHT." disableScramble className="hero-reveal-line hero-reveal-2" /></span>
-            <br/>
-            <span className="hero-reveal-line hero-reveal-3">DRIVEN BY ONE VISION.</span>
-          </h1>
-          <p>Meet the project team of S.K.S Public School.</p>
-        </div>
-        <div
-          className="credits-list"
-          role="list"
-          onPointerEnter={() => setMembersInteracting(true)}
-          onPointerLeave={() => setMembersInteracting(false)}
+      {screen === 'members' && (
+        <main
+          ref={teamScreenRef}
+          className={`intro-screen members-screen is-orchestrated ${teamRevealState.complete ? 'is-sequence-complete' : 'is-choreographing'}`}
+          data-testid="team-showcase"
+          data-active-concept={teamRevealState.activeConcept ?? 'complete'}
+          data-auto-follow-state={scrollFollowState}
+          onPointerMove={handleTeamStagePointerMove}
+          onPointerLeave={handleTeamStagePointerLeave}
         >
-          {MEMBERS.map((member, index) => {
-            const designation = getMemberDesignation(member.code);
-            const identity = getMemberIdentityProfile(member.code);
-            const timing = getCardRevealTiming(index);
-            return (
-              <article
-                className={`credit-line is-${identity.tier} is-${identity.variant} ${designation ? `has-designation is-${designation.kind}` : ''}`.trim()}
-                key={member.code}
-                role="listitem"
-                tabIndex={0}
-                aria-label={`${member.code} ${member.name}${designation ? `, ${designation.label}` : ''}`}
-                onFocus={() => setMembersInteracting(true)}
-                onBlur={() => setMembersInteracting(false)}
-                onPointerMove={handleCardPointerMove}
-                onPointerLeave={handleCardPointerLeave}
-                style={{
-                  animationDelay: `${index * 300}ms`,
-                  '--sheen-delay': `${timing.sheenDelayMs}ms`,
-                  '--name-extrusion': `${identity.extrusionDepthPx}px`,
-                  '--name-elevation': `${identity.elevationZPx}px`,
-                } as CSSProperties}
-              >
-                {designation && <DesignationTag3D designation={designation} />}
-                <span className="credit-chassis-extrude" aria-hidden="true" />
-                <div className="credit-plate">
-                  <div className="credit-plate-cavity" aria-hidden="true" />
-                  <span className="credit-name-halo" aria-hidden="true" />
-                  <CardPrecisionAccents variant={identity.variant} />
-                  <div className="credit-plate-head">
-                    <span className="credit-number">{member.code}</span>
-                    <span className="credit-axis-mark" aria-hidden="true"><i /></span>
+          <TeamShowcaseAtmosphere
+            activeConcept={teamRevealState.activeConcept}
+            sequenceComplete={teamRevealState.complete}
+          />
+          <div className="members-header">
+            <p className="eyebrow">THE TEAM BEHIND THE MODEL · S.K.S PUBLIC SCHOOL</p>
+            <h1>
+              <ScrambleText text="BUILT BY" disableScramble className="hero-reveal-line hero-reveal-1" />
+              <br/>
+              <span><ScrambleText text="EIGHT." disableScramble className="hero-reveal-line hero-reveal-2" /></span>
+              <br/>
+              <span className="hero-reveal-line hero-reveal-3">DRIVEN BY ONE VISION.</span>
+            </h1>
+            <p>Meet the project team of S.K.S Public School.</p>
+          </div>
+          <div className="credits-list" role="list">
+            {MEMBERS.map((member, index) => {
+              const designation = getMemberDesignation(member.code);
+              const identity = getMemberIdentityProfile(member.code);
+              const timing = getCardRevealTiming(index);
+              const revealSpec = getMemberRevealSpec(member.code);
+              const phase = teamRevealState.phases[index] ?? 'settled';
+              const isTagVisible = Boolean(designation && teamRevealState.tagVisible[index]);
+              return (
+                <article
+                  className={`credit-line is-${identity.tier} is-${identity.variant} is-${phase} reveal-concept-${revealSpec.concept} ${designation ? `has-designation is-${designation.kind}` : ''}`.trim()}
+                  key={member.code}
+                  role="listitem"
+                  tabIndex={phase === 'waiting' ? -1 : 0}
+                  data-member-code={member.code}
+                  data-reveal-phase={phase}
+                  data-reveal-concept={revealSpec.concept}
+                  aria-label={`${member.code} ${member.name}${designation ? `, ${designation.label}` : ''}`}
+                  onPointerMove={handleCardPointerMove}
+                  onPointerLeave={handleCardPointerLeave}
+                  style={{
+                    animationDelay: `${index * 300}ms`,
+                    '--sheen-delay': `${timing.sheenDelayMs}ms`,
+                    '--name-extrusion': `${identity.extrusionDepthPx}px`,
+                    '--name-elevation': `${identity.elevationZPx}px`,
+                  } as CSSProperties}
+                >
+                  {designation && (
+                    <DesignationTag3D
+                      designation={designation}
+                      revealConcept={revealSpec.concept}
+                      visible={isTagVisible}
+                    />
+                  )}
+                  <span className="credit-chassis-extrude" aria-hidden="true" />
+                  <div className="credit-plate">
+                    <div className="credit-plate-cavity" aria-hidden="true" />
+                    <span className="credit-name-halo" aria-hidden="true" />
+                    <CardPrecisionAccents variant={identity.variant} />
+                    <MemberCinematicIntroStage concept={revealSpec.concept} phase={phase} />
+                    <div className="credit-plate-head">
+                      <span className="credit-number">{member.code}</span>
+                      <span className="credit-axis-mark" aria-hidden="true"><i /></span>
+                    </div>
+                    <div className="credit-name">
+                      <DimensionalMemberName
+                        nameText={member.name}
+                        revealDelayMs={revealSpec.nameRevealOffsetMs}
+                        concept={revealSpec.concept}
+                        phase={phase}
+                      >
+                        <MemberName name={member.name} showInlineBadge={false} />
+                      </DimensionalMemberName>
+                    </div>
+                    <div className="credit-plate-foot" aria-hidden="true">
+                      <span className="credit-rule" />
+                      <span className="credit-mark" />
+                    </div>
                   </div>
-                  <div className="credit-name">
-                    <DimensionalMemberName nameText={member.name} revealDelayMs={timing.nameDelayMs}>
-                      <MemberName name={member.name} showInlineBadge={false} />
-                    </DimensionalMemberName>
-                  </div>
-                  <div className="credit-plate-foot" aria-hidden="true">
-                    <span className="credit-rule" />
-                    <span className="credit-mark" />
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-        <div className="team-solar-marquee" aria-hidden="true"><div className="team-solar-marquee-track"><span>DUAL AXIS TRACKING</span><i>✦</i><span>SOLAR ENERGY</span><i>✦</i><span>PHYSICS IN ACTION</span><i>✦</i><span>RENEWABLE TECHNOLOGY</span><i>✦</i><span>DUAL AXIS TRACKING</span><i>✦</i><span>SOLAR ENERGY</span><i>✦</i><span>PHYSICS IN ACTION</span><i>✦</i><span>RENEWABLE TECHNOLOGY</span><i>✦</i></div></div>
-        <div className="team-tagline"><span/> EIGHT MEMBERS. ONE VISION.</div>
-        <button className="intro-continue members-continue" type="button" onFocus={() => setMembersInteracting(true)} onBlur={() => setMembersInteracting(false)} onClick={() => setScreen('video')}>WATCH PROJECT EXPLANATION <ArrowRight size={15}/></button>
-        <div className="intro-bottom"><span>PROJECT CREDITS</span><span className="intro-progress"><i className={membersInteracting ? 'progress-two is-paused' : 'progress-two'}/></span><span>02 / 03</span></div>
-      </main>}
+                </article>
+              );
+            })}
+          </div>
+          <div className="team-solar-marquee" aria-hidden="true"><div className="team-solar-marquee-track"><span>DUAL AXIS TRACKING</span><i>✦</i><span>SOLAR ENERGY</span><i>✦</i><span>PHYSICS IN ACTION</span><i>✦</i><span>RENEWABLE TECHNOLOGY</span><i>✦</i><span>DUAL AXIS TRACKING</span><i>✦</i><span>SOLAR ENERGY</span><i>✦</i><span>PHYSICS IN ACTION</span><i>✦</i><span>RENEWABLE TECHNOLOGY</span><i>✦</i></div></div>
+          <div className="team-tagline"><span/> EIGHT MEMBERS. ONE VISION.</div>
+          <button className="intro-continue members-continue" type="button" onClick={() => setScreen('video')}>WATCH PROJECT EXPLANATION <ArrowRight size={15}/></button>
+          <div className="intro-bottom"><span>PROJECT CREDITS</span><span className="intro-progress intro-progress-stage2"><i className="progress-two"/></span><span>02 / 03</span></div>
+        </main>
+      )}
 
       {screen === 'video' && <main className="video-experience">
         <header className="public-header"><div className="public-brand"><img src="/assets/sks-school-crest.webp" alt="S.K.S Public School logo"/><div><strong>PHYSICS DIGITAL HUB</strong><span>S.K.S PUBLIC SCHOOL · ANNUAL EXHIBITION</span></div></div><div className="public-header-right"><span className="project-chip"><span/> PROJECT LIVE</span><button className="icon-button member-entry" onClick={openMemberPortal} aria-label="Open member access" title="Member access"><UserRound size={19}/></button></div></header>
