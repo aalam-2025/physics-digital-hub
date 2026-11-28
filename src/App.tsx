@@ -1,13 +1,41 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FormEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties, FormEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import Player from '@vimeo/player';
 import {
   Activity, ArrowDownToLine, ArrowLeft, ArrowRight, BarChart3, Check, Download,
   ExternalLink, Eye, FileSpreadsheet, Heart, LockKeyhole, LogOut, MessageCircle,
   Play, RefreshCw, School, ShieldCheck, Trash2, UserRound, Users, Video, X,
 } from 'lucide-react';
+import {
+  CardPrecisionAccents,
+  DesignationTag3D,
+  DimensionalMemberName,
+  TeamShowcaseAtmosphere,
+} from './components/TeamShowcase3D';
 import { env, isDemoMode } from './lib/config';
 import { gateFunction, memberFunction, publicFunction, supabase } from './lib/supabase';
+import { getCardRevealTiming, getMemberDesignation, getMemberIdentityProfile } from './lib/teamRoster';
+
+const SolarTracker3D = lazy(() => import('./components/SolarTracker3D'));
+
+class Tracker3DErrorBoundary extends Component<
+  { onError: () => void; children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch() {
+    this.props.onError();
+  }
+
+  render() {
+    return this.state.hasError ? null : this.props.children;
+  }
+}
 
 type Screen = 'welcome' | 'members' | 'video';
 type Member = { code: string; name: string; emailAlias: string; role: 'admin' | 'member' };
@@ -165,13 +193,19 @@ function SolarTrackerBlueprint() {
   );
 }
 
-type ScrambleTextProps = { text: string; delay?: number; duration?: number; className?: string };
+type ScrambleTextProps = { text: string; delay?: number; duration?: number; className?: string; disableScramble?: boolean };
 
-function ScrambleText({ text, delay = 0, duration = 760, className = '' }: ScrambleTextProps) {
+function ScrambleText({ text, delay = 0, duration = 760, className = '', disableScramble = false }: ScrambleTextProps) {
   const characters = Array.from(text);
-  const [display, setDisplay] = useState(() => characters.map((character) => /\s/.test(character) ? character : '·').join(''));
+  const [display, setDisplay] = useState(() =>
+    disableScramble ? text : characters.map((character) => /\s/.test(character) ? character : '·').join(''),
+  );
 
   useEffect(() => {
+    if (disableScramble) {
+      setDisplay(text);
+      return;
+    }
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (media.matches) {
       setDisplay(text);
@@ -212,7 +246,11 @@ function ScrambleText({ text, delay = 0, duration = 760, className = '' }: Scram
       window.clearTimeout(startTimer);
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [text, delay, duration]);
+  }, [text, delay, duration, disableScramble]);
+
+  if (disableScramble) {
+    return <span className={`dimensional-reveal-text ${className}`.trim()}>{text}</span>;
+  }
 
   return <span className={`scramble-text ${className}`.trim()} role="text" aria-label={text}><span aria-hidden="true">{display}</span></span>;
 }
@@ -352,8 +390,18 @@ function isProjectLeader(name: string | null | undefined): boolean {
 function ProjectLeaderBadge() {
   return <span className="project-leader-badge" aria-label="Project Leader"><span aria-hidden="true">✦</span> PROJECT LEADER</span>;
 }
-function MemberName({ name, scramble = false, delay = 0 }: { name: string; scramble?: boolean; delay?: number }) {
-  return <span className="member-name-wrap">{scramble ? <ScrambleText text={name} delay={delay} duration={720} /> : <span>{name}</span>}{isProjectLeader(name) && <ProjectLeaderBadge />}</span>;
+function MemberName({
+  name,
+  scramble = false,
+  delay = 0,
+  showInlineBadge = true,
+}: {
+  name: string;
+  scramble?: boolean;
+  delay?: number;
+  showInlineBadge?: boolean;
+}) {
+  return <span className="member-name-wrap">{scramble ? <ScrambleText text={name} delay={delay} duration={720} /> : <span>{name}</span>}{showInlineBadge && isProjectLeader(name) && <ProjectLeaderBadge />}</span>;
 }
 
 function handleCardPointerMove(event: ReactPointerEvent<HTMLElement>) {
@@ -427,6 +475,12 @@ function App() {
   const [analyticsDays, setAnalyticsDays] = useState(30);
   const [settingsDraft, setSettingsDraft] = useState({ active_vimeo_id: '', active_vimeo_hash: '', active_mp4_url: '', announcement: '', exhibition_info: '' });
   const [profileTab, setProfileTab] = useState<'overview' | 'comments' | 'video' | 'analytics' | 'members'>('overview');
+  const [tracker3dStatus, setTracker3dStatus] = useState<'loading' | 'ready' | 'fallback'>(() =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'fallback' : 'loading',
+  );
+  const [loadingGraceExpired, setLoadingGraceExpired] = useState(false);
+  const [welcomeInteracting, setWelcomeInteracting] = useState(false);
+  const [membersInteracting, setMembersInteracting] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const pageVisitTrackedRef = useRef(false);
   const [reloadCommentsTick, setReloadCommentsTick] = useState(0);
@@ -436,16 +490,37 @@ function App() {
     window.setTimeout(() => setToast(''), 3600);
   }, []);
 
+  useEffect(() => {
+    if (screen !== 'welcome' || view !== 'public') {
+      setWelcomeInteracting(false);
+    }
+    if (screen !== 'members' || view !== 'public') {
+      setMembersInteracting(false);
+    }
+  }, [screen, view]);
+
+  useEffect(() => {
+    if (view !== 'public' || screen !== 'welcome' || tracker3dStatus !== 'loading' || loadingGraceExpired) return;
+    const graceTimer = window.setTimeout(() => {
+      setLoadingGraceExpired(true);
+    }, 2500);
+    return () => window.clearTimeout(graceTimer);
+  }, [screen, view, tracker3dStatus, loadingGraceExpired]);
+
+  const welcomeWaitFor3D = tracker3dStatus === 'loading' && !loadingGraceExpired;
+
   // Keep the full reading time for every visitor. Reduced-motion preferences
   // are handled by CSS; they should not shorten how long the team names remain visible.
   // The on-screen Continue buttons also let visitors advance at their own pace.
   useEffect(() => {
     if (view !== 'public') return;
+    if (screen === 'welcome' && (welcomeInteracting || welcomeWaitFor3D)) return;
+    if (screen === 'members' && membersInteracting) return;
     const delay = screen === 'welcome' ? 4000 : screen === 'members' ? 5000 : 0;
     if (!delay) return;
     const timer = window.setTimeout(() => setScreen(screen === 'welcome' ? 'members' : 'video'), delay);
     return () => window.clearTimeout(timer);
-  }, [screen, view]);
+  }, [screen, view, welcomeInteracting, membersInteracting, welcomeWaitFor3D]);
 
   useEffect(() => {
     if (view !== 'public' || screen !== 'video') return;
@@ -779,19 +854,103 @@ function App() {
       {screen === 'welcome' && <main className="intro-screen welcome-screen">
         <div className="top-meta"><span className="school-lockup"><img src="/assets/sks-school-crest.webp" alt=""/><School size={14}/> S.K.S PUBLIC SCHOOL</span><span>ANNUAL EXHIBITION · PHYSICS</span></div>
         <div className="welcome-layout">
-          <div className="welcome-copy"><div className="live-label"><span/> SCHOOL PROJECT PRESENTATION</div><p className="pretitle">PROUDLY PRESENTS</p><h1>WELCOME TO<br/><span>PHYSICS DIGITAL HUB</span></h1><p className="welcome-subtitle">Explore how a solar panel follows the Sun across two axes.</p><div className="welcome-rule"><span/><small>A SCHOOL ANNUAL EXHIBITION PROJECT</small></div><button className="intro-continue" type="button" onClick={() => setScreen('members')}>MEET THE TEAM <ArrowRight size={15}/></button></div>
-          <div className="welcome-art"><div className="art-orbit orbit-a"/><div className="art-orbit orbit-b"/><div className="crest-frame"><img src="/assets/sks-school-crest.webp" alt="S.K.S Public School emblem with the motto Knowledge, Wisdom, Success"/></div><SolarTrackerBlueprint/><div className="art-corner corner-one"/><div className="art-corner corner-two"/></div>
+          <div className="welcome-copy"><div className="live-label"><span/> SCHOOL PROJECT PRESENTATION</div><p className="pretitle">PROUDLY PRESENTS</p><h1>WELCOME TO<br/><span>PHYSICS DIGITAL HUB</span></h1><p className="welcome-subtitle">Explore how a solar panel follows the Sun across two axes.</p><div className="welcome-rule"><span/><small>A SCHOOL ANNUAL EXHIBITION PROJECT</small></div><button className="intro-continue" type="button" onFocus={() => setWelcomeInteracting(true)} onBlur={() => setWelcomeInteracting(false)} onClick={() => setScreen('members')}>MEET THE TEAM <ArrowRight size={15}/></button></div>
+          <div className="welcome-art">
+            <div className="art-orbit orbit-a"/><div className="art-orbit orbit-b"/>
+            <div className={`solar-tracker-3d-stage ${tracker3dStatus === 'ready' ? 'is-ready' : ''}`}>
+              {tracker3dStatus !== 'fallback' && (
+                <Tracker3DErrorBoundary onError={() => setTracker3dStatus('fallback')}>
+                  <Suspense fallback={null}>
+                    <SolarTracker3D
+                      onReady={() => setTracker3dStatus('ready')}
+                      onUnavailable={() => setTracker3dStatus('fallback')}
+                      onInteractionStart={() => setWelcomeInteracting(true)}
+                      onInteractionEnd={() => setWelcomeInteracting(false)}
+                    />
+                  </Suspense>
+                </Tracker3DErrorBoundary>
+              )}
+              <div className="solar-tracker-fallback" aria-hidden={tracker3dStatus === 'ready'}>
+                <SolarTrackerBlueprint/>
+              </div>
+            </div>
+            <div className="crest-medallion"><img src="/assets/sks-school-crest.webp" alt="S.K.S Public School emblem with the motto Knowledge, Wisdom, Success"/></div>
+            {tracker3dStatus === 'ready' && <span className="tracker-hint">DRAG TO INSPECT · DUAL-AXIS SOLAR TRACKING</span>}
+            <div className="art-corner corner-one"/><div className="art-corner corner-two"/>
+          </div>
         </div>
-        <div className="intro-bottom"><span>DUAL AXIS SOLAR TRACKER</span><span className="intro-progress"><i/></span><span>01 / 03</span></div>
+        <div className="intro-bottom"><span>DUAL AXIS SOLAR TRACKER</span><span className="intro-progress"><i className={welcomeInteracting || welcomeWaitFor3D ? 'is-paused' : ''}/></span><span>01 / 03</span></div>
       </main>}
 
-      {screen === 'members' && <main className="intro-screen members-screen">
-        <div className="members-header"><p className="eyebrow">THE TEAM BEHIND THE MODEL · SIGNAL 02</p><h1><ScrambleText text="BUILT BY" delay={90} duration={720}/><br/><span><ScrambleText text="EIGHT." delay={280} duration={860}/></span><br/><ScrambleText text="DRIVEN BY ONE VISION." delay={520} duration={980}/></h1><p>Meet the project team of S.K.S Public School.</p></div>
-        <div className="credits-list">{MEMBERS.map((member, index) => <div className="credit-line" key={member.code} onPointerMove={handleCardPointerMove} onPointerLeave={handleCardPointerLeave} style={{ animationDelay: `${index * 300}ms` }}><span className="credit-number">{member.code}</span><span className="credit-name"><MemberName name={member.name} scramble delay={260 + index * 210} /></span><span className="credit-mark"/></div>)}</div>
+      {screen === 'members' && <main className="intro-screen members-screen" data-testid="team-showcase">
+        <TeamShowcaseAtmosphere />
+        <div className="members-header">
+          <p className="eyebrow">THE TEAM BEHIND THE MODEL · S.K.S PUBLIC SCHOOL</p>
+          <h1>
+            <ScrambleText text="BUILT BY" disableScramble className="hero-reveal-line hero-reveal-1" />
+            <br/>
+            <span><ScrambleText text="EIGHT." disableScramble className="hero-reveal-line hero-reveal-2" /></span>
+            <br/>
+            <span className="hero-reveal-line hero-reveal-3">DRIVEN BY ONE VISION.</span>
+          </h1>
+          <p>Meet the project team of S.K.S Public School.</p>
+        </div>
+        <div
+          className="credits-list"
+          role="list"
+          onPointerEnter={() => setMembersInteracting(true)}
+          onPointerLeave={() => setMembersInteracting(false)}
+        >
+          {MEMBERS.map((member, index) => {
+            const designation = getMemberDesignation(member.code);
+            const identity = getMemberIdentityProfile(member.code);
+            const timing = getCardRevealTiming(index);
+            return (
+              <article
+                className={`credit-line is-${identity.tier} is-${identity.variant} ${designation ? `has-designation is-${designation.kind}` : ''}`.trim()}
+                key={member.code}
+                role="listitem"
+                tabIndex={0}
+                aria-label={`${member.code} ${member.name}${designation ? `, ${designation.label}` : ''}`}
+                onFocus={() => setMembersInteracting(true)}
+                onBlur={() => setMembersInteracting(false)}
+                onPointerMove={handleCardPointerMove}
+                onPointerLeave={handleCardPointerLeave}
+                style={{
+                  animationDelay: `${index * 300}ms`,
+                  '--sheen-delay': `${timing.sheenDelayMs}ms`,
+                  '--name-extrusion': `${identity.extrusionDepthPx}px`,
+                  '--name-elevation': `${identity.elevationZPx}px`,
+                } as CSSProperties}
+              >
+                {designation && <DesignationTag3D designation={designation} />}
+                <span className="credit-chassis-extrude" aria-hidden="true" />
+                <div className="credit-plate">
+                  <div className="credit-plate-cavity" aria-hidden="true" />
+                  <span className="credit-name-halo" aria-hidden="true" />
+                  <CardPrecisionAccents variant={identity.variant} />
+                  <div className="credit-plate-head">
+                    <span className="credit-number">{member.code}</span>
+                    <span className="credit-axis-mark" aria-hidden="true"><i /></span>
+                  </div>
+                  <div className="credit-name">
+                    <DimensionalMemberName nameText={member.name} revealDelayMs={timing.nameDelayMs}>
+                      <MemberName name={member.name} showInlineBadge={false} />
+                    </DimensionalMemberName>
+                  </div>
+                  <div className="credit-plate-foot" aria-hidden="true">
+                    <span className="credit-rule" />
+                    <span className="credit-mark" />
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
         <div className="team-solar-marquee" aria-hidden="true"><div className="team-solar-marquee-track"><span>DUAL AXIS TRACKING</span><i>✦</i><span>SOLAR ENERGY</span><i>✦</i><span>PHYSICS IN ACTION</span><i>✦</i><span>RENEWABLE TECHNOLOGY</span><i>✦</i><span>DUAL AXIS TRACKING</span><i>✦</i><span>SOLAR ENERGY</span><i>✦</i><span>PHYSICS IN ACTION</span><i>✦</i><span>RENEWABLE TECHNOLOGY</span><i>✦</i></div></div>
         <div className="team-tagline"><span/> EIGHT MEMBERS. ONE VISION.</div>
-        <button className="intro-continue members-continue" type="button" onClick={() => setScreen('video')}>WATCH PROJECT EXPLANATION <ArrowRight size={15}/></button>
-        <div className="intro-bottom"><span>PROJECT CREDITS</span><span className="intro-progress"><i className="progress-two"/></span><span>02 / 03</span></div>
+        <button className="intro-continue members-continue" type="button" onFocus={() => setMembersInteracting(true)} onBlur={() => setMembersInteracting(false)} onClick={() => setScreen('video')}>WATCH PROJECT EXPLANATION <ArrowRight size={15}/></button>
+        <div className="intro-bottom"><span>PROJECT CREDITS</span><span className="intro-progress"><i className={membersInteracting ? 'progress-two is-paused' : 'progress-two'}/></span><span>02 / 03</span></div>
       </main>}
 
       {screen === 'video' && <main className="video-experience">

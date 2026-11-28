@@ -471,3 +471,1030 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .video-heading-mark{color:#a1b8c8;gap:9px}
 .video-heading-mark i{width:34px;background:linear-gradient(90deg,var(--solar-amber),var(--solar-blue))}
 @media(max-width:760px){.video-heading{padding:22px 0 15px}.video-heading h1{font-size:clamp(27px,6.6vw,39px)}}
+
+/* V2.0 Stage 1 — Welcome Screen 3D Dual Axis Solar Tracker stage */
+.solar-tracker-3d-stage{
+  position:relative;
+  z-index:3;
+  width:min(100%,640px);
+  height:clamp(360px,58vh,550px);
+  display:grid;
+  place-items:center;
+}
+.solar-tracker-3d-mount{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  opacity:0;
+  transition:opacity .45s ease;
+}
+.solar-tracker-3d-stage.is-ready .solar-tracker-3d-mount{opacity:1}
+.solar-tracker-3d-canvas{
+  display:block;
+  width:100%;
+  height:100%;
+  outline:none;
+  cursor:grab;
+  touch-action:pan-y;
+}
+.solar-tracker-3d-canvas:active{cursor:grabbing}
+.solar-tracker-fallback{
+  position:relative;
+  z-index:1;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:opacity .45s ease;
+}
+.solar-tracker-fallback .solar-tracker-blueprint{
+  position:relative;
+  left:auto;
+  top:auto;
+  transform:none;
+  width:min(96%,560px);
+  opacity:.82;
+}
+.solar-tracker-3d-stage.is-ready .solar-tracker-fallback{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  pointer-events:none;
+}
+.crest-medallion{
+  position:absolute;
+  z-index:4;
+  left:6%;
+  bottom:13%;
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  overflow:hidden;
+  background:rgba(7,21,36,.88);
+  border:1px solid rgba(255,198,106,.42);
+  box-shadow:0 10px 28px rgba(0,0,0,.38),0 0 18px rgba(255,182,78,.12);
+  pointer-events:none;
+}
+.crest-medallion img{width:100%;height:100%;object-fit:cover;display:block}
+.tracker-hint{
+  position:absolute;
+  z-index:4;
+  bottom:3%;
+  left:50%;
+  transform:translateX(-50%);
+  padding:6px 11px;
+  border:1px solid rgba(109,190,255,.18);
+  border-radius:6px;
+  background:rgba(6,18,32,.84);
+  color:#9dc4dc;
+  font:8px var(--mono);
+  letter-spacing:.13em;
+  white-space:nowrap;
+  pointer-events:none;
+}
+.intro-progress i.is-paused{animation-play-state:paused}
+@media(max-width:1000px){
+  .solar-tracker-3d-stage{height:clamp(300px,46vh,430px)}
+  .crest-medallion{width:54px;height:54px;left:4%;bottom:11%}
+}
+@media(max-width:760px){
+  .welcome-art{min-height:310px;margin-top:8px}
+  .solar-tracker-3d-stage{height:295px}
+  .solar-tracker-fallback .solar-tracker-blueprint{width:98%}
+  .crest-medallion{width:46px;height:46px;left:3%;bottom:12%}
+  .tracker-hint{font-size:7px;letter-spacing:.09em;padding:5px 8px;bottom:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .solar-tracker-3d-mount,.solar-tracker-fallback{transition:none}
+}
+
+/* ========================================================================
+   V2.0 Stage 2 — Premium Cinematic 3D Team Showcase
+   ======================================================================== */
+.members-screen{
+  position:relative;
+  isolation:isolate;
+  justify-content:center;
+  padding-top:28px;
+  padding-bottom:24px;
+}
+.team-showcase-atmosphere{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  overflow:hidden;
+}
+.team-atmosphere-glow{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(72px);
+}
+.team-atmosphere-glow-solar{
+  width:460px;
+  height:460px;
+  right:-90px;
+  top:-120px;
+  background:radial-gradient(circle,rgba(255,186,78,.18),rgba(255,186,78,0) 70%);
+}
+.team-atmosphere-glow-cobalt{
+  width:520px;
+  height:520px;
+  left:-140px;
+  bottom:-140px;
+  background:radial-gradient(circle,rgba(48,162,255,.16),rgba(48,162,255,0) 72%);
+}
+.team-solar-reticle{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  opacity:.85;
+  animation:atmosphereFade .9s cubic-bezier(.16,1,.3,1) both;
+}
+.reticle-azimuth-ring{
+  transform-origin:600px 360px;
+  animation:reticleSpin 64s linear infinite;
+}
+.reticle-elevation-ring{
+  transform-origin:600px 360px;
+  animation:reticleSpinReverse 82s linear infinite;
+}
+@keyframes atmosphereFade{from{opacity:0;transform:scale(.98)}to{opacity:.85;transform:scale(1)}}
+@keyframes reticleSpin{to{transform:rotate(360deg)}}
+@keyframes reticleSpinReverse{to{transform:rotate(-360deg)}}
+
+.members-screen .members-header,
+.members-screen .credits-list,
+.members-screen .team-solar-marquee,
+.members-screen .team-tagline,
+.members-screen .members-continue,
+.members-screen .intro-bottom{
+  position:relative;
+  z-index:2;
+}
+
+.members-screen .members-header{
+  margin:0 0 22px;
+  animation:none;
+}
+.members-screen .members-header .eyebrow{
+  color:#f5c77c;
+  letter-spacing:.22em;
+  margin-bottom:12px;
+  animation:stageHeaderRise .55s .04s cubic-bezier(.16,1,.3,1) both;
+}
+.members-screen .members-header h1{
+  font-size:clamp(34px,4.4vw,62px);
+  line-height:1.02;
+  perspective:900px;
+  text-wrap:balance;
+  color:#f3f8ff;
+}
+.hero-reveal-line{
+  display:inline-block;
+  transform-origin:50% 70%;
+  animation:heroLineDepth .72s cubic-bezier(.16,1,.3,1) both;
+}
+.members-screen .members-header h1 .hero-reveal-1{
+  animation-delay:.08s;
+  background:none;
+  -webkit-background-clip:border-box;
+  background-clip:border-box;
+  color:#f4f9ff;
+  text-shadow:0 4px 20px rgba(0,0,0,.38);
+}
+.members-screen .members-header h1 .hero-reveal-2{
+  animation-delay:.18s;
+}
+.members-screen .members-header h1 .hero-reveal-3{
+  animation-delay:.28s;
+  background:linear-gradient(95deg,#f3f8ff 0%,#cde7fb 52%,#ffd892 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.members-screen .members-header>p:last-child{
+  color:#a8c1d4;
+  margin-top:12px;
+  animation:stageHeaderRise .58s .36s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes stageHeaderRise{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes heroLineDepth{
+  from{opacity:0;transform:translate3d(0,18px,-32px) rotateX(14deg)}
+  to{opacity:1;transform:translate3d(0,0,0) rotateX(0deg)}
+}
+
+/* 8-Member 3D Architectural Grid — 2-Tier Exhibition Showcase (3 Flagship + 5 Standard) */
+.members-screen .credits-list{
+  width:min(1240px,96%);
+  margin:4px auto 0;
+  padding-top:12px;
+  display:grid;
+  grid-template-columns:repeat(15,minmax(0,1fr));
+  gap:24px 14px;
+  perspective:1400px;
+}
+.members-screen .credit-line{
+  position:relative;
+  display:block;
+  min-width:0;
+  padding:0;
+  border:0;
+  border-radius:14px;
+  background:none;
+  box-shadow:none;
+  backdrop-filter:none;
+  overflow:visible;
+  transform-style:preserve-3d;
+  opacity:1;
+  transform:none;
+  animation:creditCardStageIn .68s cubic-bezier(.16,1,.3,1) backwards;
+  transition:transform .24s cubic-bezier(.16,1,.3,1);
+  outline:none;
+}
+.members-screen .credit-line.is-flagship{
+  grid-column:span 5;
+  min-height:152px;
+}
+.members-screen .credit-line.is-standard{
+  grid-column:span 3;
+  min-height:114px;
+}
+@keyframes creditCardStageIn{
+  from{opacity:0;transform:perspective(1050px) translateY(22px) rotateX(10deg) scale(.975)}
+  to{opacity:1;transform:perspective(1050px) translateY(0) rotateX(0deg) scale(1)}
+}
+.members-screen .credit-line:before,
+.members-screen .credit-line:after{
+  display:none;
+}
+.members-screen .credit-line:hover,
+.members-screen .credit-line:focus-visible{
+  border-color:transparent;
+  background:none;
+  background-image:none;
+  box-shadow:none;
+  opacity:1;
+  animation:creditCardStageIn .68s cubic-bezier(.16,1,.3,1) backwards;
+  transform:perspective(900px) translateY(-5px) rotateX(2.5deg);
+}
+
+/* Physical Chassis Extrusion Backing Layer */
+.credit-chassis-extrude{
+  position:absolute;
+  inset:2px 1px -4px;
+  border-radius:14px;
+  pointer-events:none;
+  transform:translate3d(0,4px,-8px);
+  background:linear-gradient(180deg,#122437,#050c16);
+  border:1px solid rgba(114,174,218,.16);
+  box-shadow:0 16px 34px rgba(0,0,0,.56);
+}
+.members-screen .credit-line.is-flagship .credit-chassis-extrude{
+  inset:2px 1px -6px;
+  transform:translate3d(0,6px,-11px);
+  background:linear-gradient(180deg,#18314d,#050c17);
+  border-color:rgba(128,205,255,.28);
+  box-shadow:0 22px 44px rgba(0,0,0,.64),0 8px 26px rgba(34,132,232,.14);
+}
+.members-screen .credit-line.is-abhirup-project-crown .credit-chassis-extrude{
+  background:linear-gradient(180deg,#3d2911,#0f0a04);
+  border-color:rgba(255,208,122,.38);
+  box-shadow:0 24px 48px rgba(0,0,0,.68),0 10px 30px rgba(235,165,58,.18);
+}
+
+/* Multi-Layer Metallic Architectural Plate */
+.credit-plate{
+  position:relative;
+  height:100%;
+  min-height:114px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:8px;
+  padding:16px 15px 13px;
+  border-radius:14px;
+  overflow:hidden;
+  transform:translateZ(2px);
+  transform-style:preserve-3d;
+  border:1px solid rgba(154,205,238,.26);
+  background:
+    linear-gradient(155deg,rgba(255,255,255,.065) 0%,transparent 36%),
+    linear-gradient(148deg,rgba(22,38,58,.96) 0%,rgba(8,16,28,.99) 56%,rgba(16,30,48,.96) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(238,248,255,.22),
+    inset 0 -1px 0 rgba(88,168,228,.12),
+    0 18px 36px rgba(0,0,0,.42);
+  transition:border-color .24s ease,box-shadow .24s ease,background .24s ease;
+}
+.members-screen .credit-line.is-flagship .credit-plate{
+  min-height:152px;
+  padding:20px 20px 15px;
+  gap:10px;
+}
+.credit-plate-cavity{
+  position:absolute;
+  inset:5px;
+  z-index:0;
+  border-radius:10px;
+  pointer-events:none;
+  border:1px solid rgba(176,220,248,.09);
+  background:linear-gradient(162deg,rgba(12,24,39,.72) 0%,rgba(6,13,24,.88) 65%,rgba(13,25,41,.76) 100%);
+  box-shadow:inset 0 1px 10px rgba(0,0,0,.5),inset 0 -1px 0 rgba(208,236,255,.06);
+}
+.credit-name-halo{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:radial-gradient(ellipse 68% 48% at 32% 58%,rgba(148,214,255,.075),rgba(255,204,116,.025) 48%,transparent 76%);
+  transition:opacity .26s ease;
+}
+.credit-precision-svg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:2;
+  pointer-events:none;
+  color:#90cef6;
+}
+.credit-plate:before{
+  content:"";
+  position:absolute;
+  inset:-20% -60%;
+  z-index:2;
+  pointer-events:none;
+  background:linear-gradient(112deg,transparent 38%,rgba(232,247,255,.14) 48%,rgba(255,214,142,.12) 52%,transparent 62%);
+  transform:translateX(-65%);
+  animation:cardLightSweep 1.15s var(--sheen-delay,600ms) cubic-bezier(.22,1,.36,1) both;
+}
+.credit-plate:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  opacity:0;
+  background:radial-gradient(260px circle at var(--card-x,50%) var(--card-y,50%),rgba(146,226,255,.17),rgba(255,204,116,.07) 42%,transparent 72%);
+  transition:opacity .22s ease;
+}
+@keyframes cardLightSweep{
+  0%{transform:translateX(-65%);opacity:0}
+  20%{opacity:1}
+  100%{transform:translateX(65%);opacity:0}
+}
+.members-screen .credit-line:hover .credit-plate,
+.members-screen .credit-line:focus-visible .credit-plate{
+  border-color:rgba(154,224,255,.56);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.28),
+    0 24px 48px rgba(0,0,0,.48),
+    0 0 28px rgba(72,188,255,.14);
+}
+.members-screen .credit-line:focus-visible .credit-plate{
+  outline:2px solid #72e8ff;
+  outline-offset:3px;
+}
+.members-screen .credit-line:hover .credit-plate:after{opacity:1}
+.members-screen .credit-line:hover .credit-name-halo{transform:scale(1.06)}
+.members-screen .credit-line:hover .credit-plate:before{
+  animation:cardHoverSweep .85s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes cardHoverSweep{
+  0%{transform:translateX(-65%);opacity:0}
+  25%{opacity:1}
+  100%{transform:translateX(65%);opacity:0}
+}
+
+/* Flagship Variant A: 01 Aman Alam & 03 Anik Ghosh (Tech Leaders — Electric Blue + Platinum Silver) */
+.members-screen .credit-line.is-aman-tech-crown .credit-plate,
+.members-screen .credit-line.is-anik-tech-crown .credit-plate{
+  border-color:rgba(124,210,255,.42);
+  background:
+    linear-gradient(155deg,rgba(130,218,255,.095) 0%,transparent 38%),
+    linear-gradient(148deg,rgba(22,45,74,.96) 0%,rgba(8,18,34,.99) 56%,rgba(17,37,62,.96) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(226,246,255,.32),
+    inset 0 -1px 0 rgba(78,186,255,.22),
+    0 22px 46px rgba(0,0,0,.46),
+    0 0 32px rgba(42,148,242,.15);
+}
+.members-screen .credit-line.is-aman-tech-crown .credit-plate-cavity,
+.members-screen .credit-line.is-anik-tech-crown .credit-plate-cavity{
+  border-color:rgba(128,214,255,.17);
+  background:
+    radial-gradient(circle at 18% 82%,rgba(44,142,240,.1),transparent 48%),
+    linear-gradient(162deg,rgba(13,30,52,.8) 0%,rgba(6,15,28,.92) 64%,rgba(13,29,49,.82) 100%);
+}
+.members-screen .credit-line.is-anik-tech-crown .credit-plate-cavity{
+  background:
+    radial-gradient(circle at 82% 80%,rgba(74,176,255,.11),transparent 50%),
+    linear-gradient(162deg,rgba(13,30,52,.8) 0%,rgba(6,15,28,.92) 64%,rgba(13,29,49,.82) 100%);
+}
+.members-screen .credit-line.is-aman-tech-crown .credit-name-halo,
+.members-screen .credit-line.is-anik-tech-crown .credit-name-halo{
+  background:radial-gradient(ellipse 68% 48% at 32% 56%,rgba(86,192,255,.13),rgba(232,246,255,.045) 48%,transparent 75%);
+}
+.members-screen .credit-line.is-aman-tech-crown .credit-precision-svg,
+.members-screen .credit-line.is-anik-tech-crown .credit-precision-svg{
+  color:#79d4ff;
+}
+.members-screen .credit-line.is-aman-tech-crown:hover .credit-plate,
+.members-screen .credit-line.is-aman-tech-crown:focus-visible .credit-plate,
+.members-screen .credit-line.is-anik-tech-crown:hover .credit-plate,
+.members-screen .credit-line.is-anik-tech-crown:focus-visible .credit-plate{
+  border-color:rgba(148,230,255,.78);
+  box-shadow:
+    inset 0 1px 0 rgba(240,250,255,.42),
+    0 28px 54px rgba(0,0,0,.52),
+    0 0 38px rgba(64,182,255,.24);
+}
+
+/* Flagship Variant B: 02 Abhirup Baru (Crown Project Leader — Solar Gold + Champagne Platinum) */
+.members-screen .credit-line.is-abhirup-project-crown .credit-plate{
+  border-color:rgba(255,214,132,.58);
+  background:
+    linear-gradient(155deg,rgba(255,222,148,.13) 0%,transparent 40%),
+    linear-gradient(148deg,rgba(54,40,21,.95) 0%,rgba(15,20,30,.99) 56%,rgba(36,30,22,.96) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,244,212,.38),
+    inset 0 -1px 0 rgba(255,190,82,.26),
+    0 24px 50px rgba(0,0,0,.5),
+    0 0 38px rgba(242,175,68,.18);
+}
+.members-screen .credit-line.is-abhirup-project-crown .credit-plate-cavity{
+  border-color:rgba(255,216,136,.22);
+  background:
+    radial-gradient(ellipse at 50% 42%,rgba(255,196,88,.1),transparent 62%),
+    linear-gradient(162deg,rgba(32,24,13,.76) 0%,rgba(10,14,22,.92) 66%,rgba(26,21,14,.8) 100%);
+}
+.members-screen .credit-line.is-abhirup-project-crown .credit-name-halo{
+  background:radial-gradient(ellipse 68% 48% at 34% 56%,rgba(255,204,108,.15),rgba(255,245,220,.05) 48%,transparent 75%);
+}
+.members-screen .credit-line.is-abhirup-project-crown .credit-precision-svg{
+  color:#ffd584;
+}
+.members-screen .credit-line.is-abhirup-project-crown .credit-plate:before{
+  background:linear-gradient(112deg,transparent 36%,rgba(255,248,224,.2) 48%,rgba(255,206,108,.18) 53%,transparent 64%);
+}
+.members-screen .credit-line.is-abhirup-project-crown:hover .credit-plate,
+.members-screen .credit-line.is-abhirup-project-crown:focus-visible .credit-plate{
+  border-color:rgba(255,228,162,.86);
+  box-shadow:
+    inset 0 1px 0 rgba(255,248,228,.48),
+    0 30px 58px rgba(0,0,0,.56),
+    0 0 46px rgba(255,194,86,.28);
+}
+.members-screen .credit-line.is-abhirup-project-crown:focus-visible .credit-plate{
+  outline-color:#ffd786;
+}
+.members-screen .credit-line.is-abhirup-project-crown .credit-plate:after{
+  background:radial-gradient(260px circle at var(--card-x,50%) var(--card-y,50%),rgba(255,214,132,.22),rgba(245,248,255,.08) 44%,transparent 72%);
+}
+
+/* Override older nth-child(2) fallback rules cleanly */
+.members-screen .credit-line:nth-child(2){
+  border:0;
+  background:none;
+}
+.members-screen .credit-line:nth-child(2) .credit-number{
+  color:#fff0ca;
+  border-color:rgba(255,214,138,.62);
+  background:linear-gradient(145deg,rgba(182,124,44,.28),rgba(52,36,14,.62));
+}
+.members-screen .credit-line:nth-child(2) .credit-mark{
+  background:#ffe19c;
+  box-shadow:0 0 14px rgba(255,204,112,.85);
+}
+
+.credit-plate-head{
+  position:relative;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.members-screen .credit-number{
+  width:34px;
+  height:27px;
+  display:grid;
+  place-items:center;
+  border-radius:7px;
+  border:1px solid rgba(168,214,244,.32);
+  background:linear-gradient(145deg,rgba(40,72,104,.45),rgba(10,22,36,.78));
+  color:#d6ecfc;
+  font:500 10.5px var(--mono);
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.08em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 2px 6px rgba(0,0,0,.32);
+}
+.members-screen .credit-line.is-flagship .credit-number{
+  width:38px;
+  height:29px;
+  font-size:11px;
+  border-color:rgba(128,212,255,.52);
+  color:#ebf7ff;
+  background:linear-gradient(145deg,rgba(38,98,158,.48),rgba(10,24,42,.82));
+}
+.credit-axis-mark{
+  display:inline-flex;
+  align-items:center;
+  width:28px;
+  height:8px;
+  opacity:.58;
+}
+.credit-axis-mark i{
+  display:block;
+  width:100%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(160,222,255,.72));
+}
+.members-screen .credit-line.has-designation .credit-axis-mark{opacity:0}
+
+/* True Multi-Plane CSS 3D Extruded Metallic Typography */
+.members-screen .credit-name{
+  position:relative;
+  z-index:3;
+  margin:2px 0;
+  font-family:var(--display);
+  font-size:clamp(14.5px,1.25vw,17.5px);
+  font-weight:700;
+  line-height:1.18;
+  letter-spacing:-.015em;
+  color:#eef6ff;
+}
+.members-screen .credit-line.is-aman-tech-crown .credit-name,
+.members-screen .credit-line.is-anik-tech-crown .credit-name{
+  font-size:clamp(21px,1.88vw,26.5px);
+  letter-spacing:-.02em;
+}
+.members-screen .credit-line.is-abhirup-project-crown .credit-name{
+  font-size:clamp(22px,1.98vw,28px);
+  letter-spacing:-.02em;
+}
+.member-name-3d{
+  position:relative;
+  display:inline-block;
+  max-width:100%;
+  transform-style:preserve-3d;
+}
+.member-name-3d-shadow,
+.member-name-3d-extrude-back,
+.member-name-3d-extrude-mid{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  user-select:none;
+}
+.member-name-3d-shadow{
+  color:rgba(2,7,14,.86);
+  transform:translate3d(0,calc(var(--name-extrusion,3px) * .72),-4px);
+  text-shadow:0 3px 8px rgba(0,0,0,.76);
+}
+.member-name-3d-extrude-back{
+  color:#152c44;
+  transform:translate3d(0,calc(var(--name-extrusion,3px) * .48),-2.5px);
+}
+.member-name-3d-extrude-mid{
+  color:#3c668e;
+  transform:translate3d(0,calc(var(--name-extrusion,3px) * .25),-1px);
+}
+.member-name-3d-face{
+  position:relative;
+  display:inline-block;
+  transform:translateZ(5px);
+  background:linear-gradient(175deg,#ffffff 0%,#eaf4fd 42%,#b9d0e4 78%,#dbeaf7 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.45));
+  animation:memberNameEmerge .56s var(--name-reveal-delay,160ms) cubic-bezier(.16,1,.3,1) backwards;
+}
+
+/* Tech Leaders (01 & 03) Platinum-Silver + Electric Blue Extrusion */
+.members-screen .credit-line.is-aman-tech-crown .member-name-3d-extrude-back,
+.members-screen .credit-line.is-anik-tech-crown .member-name-3d-extrude-back{
+  color:#0f3a6d;
+}
+.members-screen .credit-line.is-aman-tech-crown .member-name-3d-extrude-mid,
+.members-screen .credit-line.is-anik-tech-crown .member-name-3d-extrude-mid{
+  color:#488ed4;
+}
+.members-screen .credit-line.is-aman-tech-crown .member-name-3d-face,
+.members-screen .credit-line.is-anik-tech-crown .member-name-3d-face{
+  transform:translateZ(7px);
+  background:linear-gradient(174deg,#ffffff 0%,#f1f9ff 38%,#a6d8ff 74%,#e4f3ff 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+/* Project Leader (02) Solar Gold + Champagne Platinum Extrusion */
+.members-screen .credit-line.is-abhirup-project-crown .member-name-3d-extrude-back{
+  color:#58360b;
+}
+.members-screen .credit-line.is-abhirup-project-crown .member-name-3d-extrude-mid{
+  color:#be8835;
+}
+.members-screen .credit-line.is-abhirup-project-crown .member-name-3d-face{
+  transform:translateZ(8px);
+  background:linear-gradient(174deg,#fffef9 0%,#fff1cd 38%,#efb759 74%,#ffe9b2 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+@keyframes memberNameEmerge{
+  from{opacity:0;transform:translate3d(0,8px,-3px)}
+  to{opacity:1;transform:translate3d(0,0,5px)}
+}
+
+.credit-plate-foot{
+  position:relative;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.credit-rule{
+  flex:1;
+  height:1px;
+  background:linear-gradient(90deg,rgba(142,205,244,.32),rgba(255,204,116,.1),transparent);
+}
+.members-screen .credit-line.is-aman-tech-crown .credit-rule,
+.members-screen .credit-line.is-anik-tech-crown .credit-rule{
+  background:linear-gradient(90deg,rgba(122,212,255,.52),rgba(235,248,255,.16),transparent);
+}
+.members-screen .credit-line.is-abhirup-project-crown .credit-rule{
+  background:linear-gradient(90deg,rgba(255,214,132,.62),rgba(255,248,224,.22),transparent);
+}
+.members-screen .credit-mark{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#89dcff;
+  box-shadow:0 0 11px rgba(100,214,255,.72);
+}
+
+/* ========================================================================
+   THREE SPECIAL FLOATING 3D METALLIC DESIGNATION TAGS
+   ======================================================================== */
+.designation-tag-3d{
+  position:absolute;
+  top:-11px;
+  right:16px;
+  z-index:8;
+  pointer-events:none;
+  transform-style:preserve-3d;
+  perspective:700px;
+}
+.tag-3d-entrance{
+  transform-style:preserve-3d;
+  animation:tag3DEntrance .72s var(--tag-entrance-delay,360ms) cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes tag3DEntrance{
+  0%{opacity:0;transform:translate3d(0,-10px,-18px) rotateX(28deg) scale(.86)}
+  100%{opacity:1;transform:translate3d(0,0,0) rotateX(0deg) scale(1)}
+}
+.tag-3d-float{
+  position:relative;
+  transform-style:preserve-3d;
+  animation:tag3DFloat var(--tag-float-duration,4.8s) var(--tag-float-delay,0s) ease-in-out infinite;
+  transition:transform .28s cubic-bezier(.16,1,.3,1);
+}
+@keyframes tag3DFloat{
+  0%,100%{transform:translate3d(0,0,22px) rotateX(6deg) rotateY(-4deg)}
+  50%{transform:translate3d(0,-4px,28px) rotateX(9deg) rotateY(4deg)}
+}
+.members-screen .credit-line:hover .tag-3d-float,
+.members-screen .credit-line:focus-visible .tag-3d-float{
+  transform:translate3d(0,-5px,34px) rotateX(4deg) rotateY(0deg);
+}
+.tag-3d-extrusion{
+  position:absolute;
+  inset:0;
+  border-radius:6px;
+  transform:translate3d(0,3.5px,-5px);
+}
+.tag-3d-rim{
+  position:absolute;
+  inset:-1px;
+  border-radius:7px;
+  transform:translateZ(-2px);
+}
+.tag-3d-face{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 10px;
+  border-radius:6px;
+  overflow:hidden;
+  white-space:nowrap;
+  transform:translateZ(2px);
+  font:700 9px var(--mono);
+  letter-spacing:.14em;
+  line-height:1.2;
+}
+.tag-3d-face:after{
+  content:"";
+  position:absolute;
+  inset:-30% -70%;
+  pointer-events:none;
+  background:linear-gradient(110deg,transparent 38%,rgba(255,255,255,.36) 50%,transparent 62%);
+  transform:translateX(-75%);
+  animation:tagLightSweep 5.6s calc(var(--tag-entrance-delay,360ms) + 600ms) ease-in-out infinite;
+}
+@keyframes tagLightSweep{
+  0%,58%{transform:translateX(-75%);opacity:0}
+  68%{opacity:1}
+  88%,100%{transform:translateX(75%);opacity:0}
+}
+.tag-3d-emblem{
+  width:11px;
+  height:11px;
+  flex:0 0 auto;
+}
+.tag-3d-label{
+  position:relative;
+  z-index:1;
+}
+
+/* Electric Blue + Polished Silver identity (01 Aman Alam & 03 Anik Ghosh) */
+.designation-tag-3d.is-electric-silver .tag-3d-extrusion{
+  background:linear-gradient(180deg,#122944,#071321);
+  box-shadow:0 12px 24px rgba(0,0,0,.55),0 6px 20px rgba(32,140,242,.34);
+}
+.designation-tag-3d.is-electric-silver .tag-3d-rim{
+  background:linear-gradient(135deg,#b5e7ff,#3473ad 55%,#e1f2ff);
+  opacity:.84;
+}
+.designation-tag-3d.is-electric-silver .tag-3d-face{
+  border:1px solid rgba(173,231,255,.82);
+  background:linear-gradient(135deg,#1d4169 0%,#2d68a1 34%,#142b47 68%,#245486 100%);
+  box-shadow:inset 0 1px 0 rgba(240,250,255,.54),inset 0 -1px 0 rgba(86,188,255,.32);
+  color:#f4faff;
+  text-shadow:0 1px 2px rgba(4,12,24,.75);
+}
+.designation-tag-3d.is-electric-silver .tag-3d-face:before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:12%;
+  right:12%;
+  height:1.25px;
+  background:linear-gradient(90deg,transparent,#e6f6ff,transparent);
+}
+.designation-tag-3d.is-electric-silver .tag-3d-emblem{
+  color:#8be4ff;
+  filter:drop-shadow(0 0 5px rgba(84,218,255,.7));
+}
+
+/* Solar Gold + Platinum identity (02 Abhirup Baru) */
+.designation-tag-3d.is-solar-platinum .tag-3d-extrusion{
+  background:linear-gradient(180deg,#3d260b,#180e03);
+  box-shadow:0 14px 28px rgba(0,0,0,.6),0 8px 24px rgba(238,166,54,.36);
+}
+.designation-tag-3d.is-solar-platinum .tag-3d-rim{
+  background:linear-gradient(135deg,#fff3d2,#b47320 52%,#ffe5a4);
+  opacity:.9;
+}
+.designation-tag-3d.is-solar-platinum .tag-3d-face{
+  padding:5.5px 11px;
+  border:1px solid rgba(255,227,154,.88);
+  background:linear-gradient(135deg,#5a3b14 0%,#a77124 32%,#2f1f0b 66%,#85571a 100%);
+  box-shadow:inset 0 1px 0 rgba(255,248,224,.62),inset 0 -1px 0 rgba(255,190,82,.35);
+  color:#fff8e6;
+  text-shadow:0 1px 2px rgba(26,14,2,.75);
+}
+.designation-tag-3d.is-solar-platinum .tag-3d-face:before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:12%;
+  right:12%;
+  height:1.5px;
+  background:linear-gradient(90deg,transparent,#fff8dc,transparent);
+}
+.designation-tag-3d.is-solar-platinum .tag-3d-emblem{
+  color:#ffe29b;
+  filter:drop-shadow(0 0 6px rgba(255,208,108,.75));
+}
+
+/* Marquee, Tagline, Button & Footer Flow — zero collision across viewports */
+.members-screen .team-solar-marquee{
+  margin-top:20px;
+}
+.members-screen .team-tagline{
+  margin:14px 0 0;
+}
+.members-screen .members-continue{
+  margin:18px auto 0;
+}
+.members-screen .intro-bottom{
+  position:static;
+  left:auto;
+  right:auto;
+  bottom:auto;
+  width:100%;
+  margin-top:24px;
+}
+.members-screen .intro-progress{
+  width:min(36vw,400px);
+}
+
+/* Tablet Responsive (<= 1100px): Symmetrical 2-Column Exhibition Grid */
+@media(max-width:1100px){
+  .members-screen .credits-list{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    width:min(880px,96%);
+    gap:26px 16px;
+  }
+  .members-screen .credit-line.is-flagship,
+  .members-screen .credit-line.is-standard{
+    grid-column:span 1;
+    min-height:126px;
+  }
+  .members-screen .credit-line.is-flagship .credit-plate,
+  .members-screen .credit-line.is-standard .credit-plate{
+    min-height:126px;
+    padding:18px 16px 14px;
+  }
+  .members-screen .credit-name{
+    font-size:clamp(16px,2.2vw,19px);
+  }
+  .members-screen .credit-line.is-aman-tech-crown .credit-name,
+  .members-screen .credit-line.is-anik-tech-crown .credit-name,
+  .members-screen .credit-line.is-abhirup-project-crown .credit-name{
+    font-size:clamp(18px,2.5vw,22px);
+  }
+}
+
+/* Mobile Responsive (<= 760px): Flagship Full-Width Tier + 2-Column Standard Tier */
+@media(max-width:760px){
+  .members-screen{
+    padding-top:20px;
+    padding-bottom:20px;
+  }
+  .members-screen .members-header{
+    margin:0 0 14px;
+  }
+  .members-screen .members-header .eyebrow{
+    font-size:8.5px;
+    letter-spacing:.14em;
+  }
+  .members-screen .members-header h1{
+    font-size:clamp(30px,7.6vw,46px);
+  }
+  .members-screen .credits-list{
+    width:100%;
+    padding-top:14px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:20px 10px;
+  }
+  .members-screen .credit-line.is-flagship{
+    grid-column:1 / -1;
+    min-height:108px;
+  }
+  .members-screen .credit-line.is-flagship .credit-plate{
+    min-height:108px;
+    padding:16px 14px 12px;
+    gap:7px;
+  }
+  .members-screen .credit-line.is-standard{
+    grid-column:span 1;
+    min-height:94px;
+  }
+  .members-screen .credit-line.is-standard .credit-plate{
+    min-height:94px;
+    padding:14px 11px 10px;
+    gap:6px;
+  }
+  .members-screen .credit-line.is-standard:last-child{
+    grid-column:1 / -1;
+    width:calc(50% - 5px);
+    justify-self:center;
+  }
+  .members-screen .credit-number{
+    width:27px;
+    height:23px;
+    font-size:9.5px;
+  }
+  .members-screen .credit-line.is-flagship .credit-number{
+    width:31px;
+    height:24px;
+    font-size:10px;
+  }
+  .members-screen .credit-name{
+    font-size:clamp(13.5px,3.6vw,16px);
+  }
+  .members-screen .credit-line.is-aman-tech-crown .credit-name,
+  .members-screen .credit-line.is-anik-tech-crown .credit-name{
+    font-size:clamp(19px,5vw,23px);
+  }
+  .members-screen .credit-line.is-abhirup-project-crown .credit-name{
+    font-size:clamp(20px,5.3vw,24px);
+  }
+  .designation-tag-3d{
+    top:-10px;
+    right:10px;
+  }
+  .tag-3d-float{
+    animation-name:tag3DFloatMobile;
+  }
+  @keyframes tag3DFloatMobile{
+    0%,100%{transform:translate3d(0,0,18px) rotateX(5deg) rotateY(-3deg)}
+    50%{transform:translate3d(0,-2.5px,22px) rotateX(7deg) rotateY(3deg)}
+  }
+  .tag-3d-face{
+    padding:4px 8px;
+    gap:4.5px;
+    font-size:7.5px;
+    letter-spacing:.1em;
+  }
+  .designation-tag-3d.is-solar-platinum .tag-3d-face{
+    padding:4px 8.5px;
+  }
+  .tag-3d-emblem{
+    width:9.5px;
+    height:9.5px;
+  }
+  .members-screen .team-solar-marquee{
+    margin-top:16px;
+  }
+  .members-screen .team-tagline{
+    margin-top:14px;
+  }
+  .members-screen .members-continue{
+    margin-top:16px;
+  }
+  .members-screen .intro-bottom{
+    margin-top:20px;
+  }
+  .members-screen .intro-progress{
+    width:min(30vw,180px);
+  }
+}
+
+/* Narrow Mobile (<= 380px): Single-Column Full-Width Stack */
+@media(max-width:380px){
+  .members-screen .credits-list{
+    grid-template-columns:1fr;
+    gap:18px;
+  }
+  .members-screen .credit-line.is-standard:last-child{
+    width:100%;
+    justify-self:stretch;
+  }
+  .members-screen .credit-line.is-flagship,
+  .members-screen .credit-line.is-flagship .credit-plate{
+    min-height:100px;
+  }
+  .members-screen .credit-line.is-standard,
+  .members-screen .credit-line.is-standard .credit-plate{
+    min-height:84px;
+  }
+  .members-screen .credit-name{
+    font-size:15.5px;
+  }
+  .members-screen .credit-line.is-aman-tech-crown .credit-name,
+  .members-screen .credit-line.is-anik-tech-crown .credit-name{
+    font-size:19px;
+  }
+  .members-screen .credit-line.is-abhirup-project-crown .credit-name{
+    font-size:20px;
+  }
+}
+
+/* Reduced-Motion Static Accessible Fallback */
+@media(prefers-reduced-motion:reduce){
+  .team-solar-reticle,.reticle-azimuth-ring,.reticle-elevation-ring,
+  .members-screen .members-header .eyebrow,.hero-reveal-line,.members-screen .members-header>p:last-child,
+  .members-screen .credit-line,.tag-3d-entrance,.tag-3d-float,.tag-3d-face:after,.member-name-3d-face,.credit-plate:before{
+    animation:none!important;
+  }
+  .members-screen .credit-line{opacity:1;transform:none;will-change:auto}
+  .hero-reveal-line,.tag-3d-entrance,.member-name-3d-face{
+    opacity:1!important;
+    transform:none!important;
+  }
+  .tag-3d-float{
+    transform:translate3d(0,0,0)!important;
+  }
+  .members-screen .credit-line:hover,
+  .members-screen .credit-line:focus-visible{
+    transform:none!important;
+  }
+  .credit-plate:before,.tag-3d-face:after{
+    display:none!important;
+  }
+}
+
+
+
